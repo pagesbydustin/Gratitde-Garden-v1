@@ -35,20 +35,8 @@ export function WordCloud({ data }: WordCloudProps) {
   const minFontWeight = 300;
   const maxFontWeight = 800;
 
-  // Sort words to place larger ones in the center
-  const sortedData: AdjectiveData[] = [];
-  const originalData = [...data]; // data is already sorted by count descending
-  while(originalData.length > 0) {
-    // Add the largest remaining
-    if (originalData.length > 0) {
-      sortedData.push(originalData.shift()!);
-    }
-    // Add the smallest remaining to the end
-    if (originalData.length > 0) {
-      sortedData.push(originalData.pop()!);
-    }
-  }
-
+  // Data is already sorted by count descending from the flow
+  const sortedData = [...data];
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-center">
