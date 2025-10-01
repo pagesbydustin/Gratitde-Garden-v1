@@ -8,22 +8,23 @@ import path from 'path';
 
 const entriesFilePath = path.join(process.cwd(), 'src/lib/entries.json');
 
+// A more robust way to handle file reading and writing.
 async function readEntries(): Promise<JournalEntry[]> {
   try {
     const data = await fs.readFile(entriesFilePath, 'utf-8');
     const entries = JSON.parse(data);
-    // Ensure date objects are correctly parsed
     return entries.map((entry: JournalEntry) => ({
       ...entry,
       date: new Date(entry.date).toISOString(),
     }));
   } catch (error) {
-    // If the file doesn't exist or is empty, return an empty array
     if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      // If the file doesn't exist, create it with an empty array.
+      await writeEntries([]);
       return [];
     }
-    console.error('Error reading entries file:', error);
-    return [];
+    // For other errors, re-throw to be handled by the caller.
+    throw new Error('Failed to read journal entries.');
   }
 }
 
@@ -32,7 +33,7 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
     const data = JSON.stringify(entries, null, 2);
     await fs.writeFile(entriesFilePath, data, 'utf-8');
   } catch (error) {
-    console.error('Error writing entries file:', error);
+    throw new Error('Failed to write journal entries.');
   }
 }
 
@@ -43,7 +44,7 @@ export async function getEntries(): Promise<JournalEntry[]> {
 }
 
 const entrySchema = z.object({
-  text: z.string().min(10, 'Your entry must be at least 10 characters long.'),
+  text: z.string().min(10, 'Your entry must be at least 10 characters long.').max(1000),
   moodScore: z.number().min(1).max(5),
 });
 
@@ -66,6 +67,8 @@ export async function addEntry(data: { text: string; moodScore: number; }) {
   await writeEntries(updatedEntries);
 
   revalidatePath('/');
+  revalidatePath('/overview');
+  revalidatePath('/archive');
   return { success: true, entry: newEntry };
 }
 
@@ -93,5 +96,7 @@ export async function updateEntry(data: { id: string, text: string; moodScore: n
     await writeEntries(entries);
 
     revalidatePath('/');
+    revalidatePath('/overview');
+    revalidatePath('/archive');
     return { success: true, entry: entries[entryIndex] };
 }
