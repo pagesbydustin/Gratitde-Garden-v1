@@ -4,17 +4,26 @@ import { getEntries } from '@/lib/actions';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
-import { HeroTreeIcon } from '@/components/icons';
+import Image from 'next/image';
+import placeholderImageData from '@/lib/placeholder-images.json';
 
 export const revalidate = 0;
 
 export default function Home() {
+  const { hero } = placeholderImageData;
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
       <main className="w-full max-w-2xl px-4 py-8 md:py-12 space-y-12">
         <header className="text-center space-y-4">
             <div className="w-48 h-48 mx-auto text-primary">
-              <HeroTreeIcon className="w-full h-full" />
+              <Image
+                src={hero.src}
+                alt="A beautiful flower representing growth and gratitude"
+                width={hero.width}
+                height={hero.height}
+                className="rounded-full object-cover w-full h-full"
+                data-ai-hint="flower"
+              />
             </div>
             <h1 className="text-4xl font-headline font-bold text-primary">Gratitude Garden</h1>
             <p className="text-muted-foreground">Cultivate joy, one entry at a time.</p>
