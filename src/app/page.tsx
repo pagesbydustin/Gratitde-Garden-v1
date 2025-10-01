@@ -5,6 +5,7 @@ import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { GratitudeIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
 
 export const revalidate = 0;
 
@@ -22,7 +23,7 @@ export default function Home() {
 
         <section className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-headline font-semibold">Past Entries</h2>
+            <h2 className="text-3xl font-headline font-semibold">This Week's Entries</h2>
             <Button asChild variant="outline">
               <Link href="/archive">View Archive</Link>
             </Button>
@@ -51,5 +52,14 @@ async function NewEntrySection() {
 
 async function PastEntriesSection() {
   const entries = await getEntries();
-  return <EntryList entries={entries} />;
+  const today = new Date();
+  const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
+  const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Saturday
+
+  const currentWeekEntries = entries.filter(entry => {
+    const entryDate = new Date(entry.date);
+    return isWithinInterval(entryDate, { start: weekStart, end: weekEnd });
+  });
+
+  return <EntryList entries={currentWeekEntries} />;
 }
