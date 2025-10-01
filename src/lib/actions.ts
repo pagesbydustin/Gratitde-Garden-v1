@@ -3,34 +3,42 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { JournalEntry } from '@/lib/types';
+import fs from 'fs/promises';
+import path from 'path';
 
-// This is a mock in-memory store. In a real app, you would use a database like Firestore.
-const mockEntries: JournalEntry[] = [
-  {
-    id: '1',
-    date: new Date(Date.now() - 86400000 * 2).toISOString(),
-    moodScore: 4,
-    text: 'I had a wonderful video call with an old friend I hadn’t seen in years. It was so good to catch up and laugh about old times. Feeling very connected and happy.',
-  },
-  {
-    id: '2',
-    date: new Date(Date.now() - 86400000).toISOString(),
-    moodScore: 5,
-    text: 'Finished a big project at work that I was really passionate about. Seeing it all come together is incredibly satisfying. Proud of what our team accomplished.',
-  },
-  {
-    id: '3',
-    date: new Date(Date.now() - 86400000 * 5).toISOString(),
-    moodScore: 2,
-    text: 'Feeling a bit down today. It was rainy and I got stuck in traffic for over an hour. Just one of those days where nothing seems to go right. Grateful for a warm cup of tea and a cozy blanket tonight, though.',
-  },
-];
+const entriesFilePath = path.join(process.cwd(), 'src/lib/entries.json');
 
-let entries: JournalEntry[] = [...mockEntries];
+async function readEntries(): Promise<JournalEntry[]> {
+  try {
+    const data = await fs.readFile(entriesFilePath, 'utf-8');
+    const entries = JSON.parse(data);
+    // Ensure date objects are correctly parsed
+    return entries.map((entry: JournalEntry) => ({
+      ...entry,
+      date: new Date(entry.date).toISOString(),
+    }));
+  } catch (error) {
+    // If the file doesn't exist or is empty, return an empty array
+    if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    console.error('Error reading entries file:', error);
+    return [];
+  }
+}
+
+async function writeEntries(entries: JournalEntry[]): Promise<void> {
+  try {
+    const data = JSON.stringify(entries, null, 2);
+    await fs.writeFile(entriesFilePath, data, 'utf-8');
+  } catch (error) {
+    console.error('Error writing entries file:', error);
+  }
+}
+
 
 export async function getEntries(): Promise<JournalEntry[]> {
-  // Simulate network latency
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const entries = await readEntries();
   return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
@@ -45,6 +53,8 @@ export async function addEntry(data: { text: string; moodScore: number; }) {
   if (!parsedData.success) {
     return { success: false, error: parsedData.error.flatten().fieldErrors };
   }
+  
+  const entries = await readEntries();
 
   const newEntry: JournalEntry = {
     id: crypto.randomUUID(),
@@ -52,7 +62,9 @@ export async function addEntry(data: { text: string; moodScore: number; }) {
     ...parsedData.data,
   };
 
-  entries.unshift(newEntry);
+  const updatedEntries = [newEntry, ...entries];
+  await writeEntries(updatedEntries);
+
   revalidatePath('/');
   return { success: true, entry: newEntry };
 }

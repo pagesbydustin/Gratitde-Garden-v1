@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "date": "2024-07-28T12:00:00.000Z",
+    "moodScore": 4,
+    "text": "I had a wonderful video call with an old friend I hadn’t seen in years. It was so good to catch up and laugh about old times. Feeling very connected and happy."
+  },
+  {
+    "id": "2",
+    "date": "2024-07-29T12:00:00.000Z",
+    "moodScore": 5,
+    "text": "Finished a big project at work that I was really passionate about. Seeing it all come together is incredibly satisfying. Proud of what our team accomplished."
+  },
+  {
+    "id": "3",
+    "date": "2024-07-25T12:00:00.000Z",
+    "moodScore": 2,
+    "text": "Feeling a bit down today. It was rainy and I got stuck in traffic for over an hour. Just one of those days where nothing seems to go right. Grateful for a warm cup of tea and a cozy blanket tonight, though."
+  }
+]
