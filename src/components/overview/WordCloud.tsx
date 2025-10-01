@@ -9,9 +9,15 @@ type WordCloudProps = {
   data: AdjectiveData[];
 };
 
-// Function to scale a value from one range to another
+// Use a non-linear scale for a more balanced visual effect
 const scale = (num: number, in_min: number, in_max: number, out_min: number, out_max: number) => {
-    return ((num - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+    if (in_min === in_max) {
+      return (out_min + out_max) / 2;
+    }
+    const normalized = (num - in_min) / (in_max - in_min);
+    // Use a square root curve to make the size increase less dramatically
+    const scaled = Math.sqrt(normalized); 
+    return scaled * (out_max - out_min) + out_min;
 }
 
 export function WordCloud({ data }: WordCloudProps) {
@@ -24,33 +30,25 @@ export function WordCloud({ data }: WordCloudProps) {
   const maxCount = Math.max(...counts);
 
   // Define font size and weight ranges
-  const minFontSize = 1; // Corresponds to 'rem', so 1rem
-  const maxFontSize = 6; // Corresponds to 'rem', so 6rem
+  const minFontSize = 1.2; // in rem
+  const maxFontSize = 5; // in rem
   const minFontWeight = 300;
-  const maxFontWeight = 900;
+  const maxFontWeight = 800;
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center p-4">
+    <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-center">
       {data.map(({ adjective, count }) => {
-        // Handle the case where all counts are the same
-        const isSingleCount = minCount === maxCount;
-        
-        const fontSize = isSingleCount 
-          ? (minFontSize + maxFontSize) / 2 
-          : scale(count, minCount, maxCount, minFontSize, maxFontSize);
-          
-        const fontWeight = isSingleCount
-          ? (minFontWeight + maxFontWeight) / 2
-          : Math.round(scale(count, minCount, maxCount, minFontWeight, maxFontWeight) / 100) * 100;
+        const fontSize = scale(count, minCount, maxCount, minFontSize, maxFontSize);
+        const fontWeight = Math.round(scale(count, minCount, maxCount, minFontWeight, maxFontWeight) / 100) * 100;
 
         return (
           <span
             key={adjective}
-            className="transition-all duration-300 ease-in-out hover:scale-110 opacity-75 hover:opacity-100"
+            className="transition-all duration-300 ease-in-out opacity-75 hover:opacity-100 hover:scale-110"
             style={{
               fontSize: `${fontSize}rem`,
               fontWeight: fontWeight,
-              lineHeight: '1',
+              lineHeight: '1.2',
               color: 'hsl(var(--primary))'
             }}
           >

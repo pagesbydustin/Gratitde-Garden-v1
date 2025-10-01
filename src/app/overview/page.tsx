@@ -37,7 +37,7 @@ export default async function OverviewPage() {
                 The adjectives you've used most frequently. The larger and bolder the word, the more you've used it.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 md:p-6">
               {analysis && analysis.adjectives.length > 0 ? (
                 <WordCloud data={analysis.adjectives} />
               ) : (
