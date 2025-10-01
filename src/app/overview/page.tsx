@@ -34,7 +34,7 @@ export default async function OverviewPage() {
             <CardHeader>
               <CardTitle>Adjective Word Cloud</CardTitle>
               <CardDescription>
-                The positive and neutral adjectives you've used most frequently. The larger and bolder the word, the more you've used it.
+                The adjectives you've used most frequently. The larger and bolder the word, the more you've used it.
               </CardDescription>
             </CardHeader>
             <CardContent>

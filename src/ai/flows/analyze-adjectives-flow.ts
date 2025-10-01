@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
   name: 'analyzeAdjectivesPrompt',
   input: { schema: AdjectiveAnalysisInputSchema },
   output: { schema: AdjectiveAnalysisOutputSchema },
-  prompt: `You are a linguistic analyst. I will provide you with a collection of journal entries. Your task is to identify the top 15 most frequently used positive and neutral adjectives.
+  prompt: `You are a linguistic analyst. I will provide you with a collection of journal entries. Your task is to identify the top 15 most frequently used adjectives.
 
 Analyze the following text:
 ---
@@ -67,10 +67,9 @@ Analyze the following text:
 
 Instructions:
 1. Read through all the provided text.
-2. Identify all adjectives.
-3. Ignore negative adjectives (e.g., "bad", "awful", "terrible"). Focus on positive and neutral ones.
-4. Count the occurrences of each adjective.
-5. Return a JSON object containing a list of the top 15 adjectives, sorted from most frequent to least frequent. Each item in the list should include the adjective and its count.
+2. Identify all adjectives (positive, neutral, and negative).
+3. Count the occurrences of each adjective.
+4. Return a JSON object containing a list of the top 15 adjectives, sorted from most frequent to least frequent. Each item in the list should include the adjective and its count.
 `,
 });
 
