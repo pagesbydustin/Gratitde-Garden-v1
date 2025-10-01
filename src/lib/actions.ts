@@ -42,13 +42,13 @@ export async function getEntries(): Promise<JournalEntry[]> {
   return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-const addEntrySchema = z.object({
+const entrySchema = z.object({
   text: z.string().min(10, 'Your entry must be at least 10 characters long.'),
   moodScore: z.number().min(1).max(5),
 });
 
 export async function addEntry(data: { text: string; moodScore: number; }) {
-  const parsedData = addEntrySchema.safeParse(data);
+  const parsedData = entrySchema.safeParse(data);
 
   if (!parsedData.success) {
     return { success: false, error: parsedData.error.flatten().fieldErrors };
@@ -67,4 +67,31 @@ export async function addEntry(data: { text: string; moodScore: number; }) {
 
   revalidatePath('/');
   return { success: true, entry: newEntry };
+}
+
+const updateEntrySchema = entrySchema.extend({
+  id: z.string(),
+});
+
+export async function updateEntry(data: { id: string, text: string; moodScore: number; }) {
+    const parsedData = updateEntrySchema.safeParse(data);
+
+    if (!parsedData.success) {
+        return { success: false, error: parsedData.error.flatten().fieldErrors };
+    }
+
+    const entries = await readEntries();
+    const { id, text, moodScore } = parsedData.data;
+
+    const entryIndex = entries.findIndex((e) => e.id === id);
+
+    if (entryIndex === -1) {
+        return { success: false, error: { form: ['Entry not found.'] } };
+    }
+
+    entries[entryIndex] = { ...entries[entryIndex], text, moodScore };
+    await writeEntries(entries);
+
+    revalidatePath('/');
+    return { success: true, entry: entries[entryIndex] };
 }
