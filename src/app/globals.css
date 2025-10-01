@@ -37,6 +37,12 @@ body {
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+
+    --chart-1: 0 72% 51%; /* Red for Awful */
+    --chart-2: 48 96% 50%; /* Yellow for Okay */
+    --chart-3: 122 39% 49%; /* Green for Good */
+    --chart-4: 221 83% 53%; /* Blue for Great */
+    --chart-5: 271 91% 65%; /* Purple for Awesome */
   }
 
   .dark {
@@ -67,6 +73,12 @@ body {
     --border: 180 25% 35%;
     --input: 180 25% 35%;
     --ring: 214 41% 78%;
+
+    --chart-1: 0 63% 40%;
+    --chart-2: 48 80% 45%;
+    --chart-3: 122 35% 55%;
+    --chart-4: 221 75% 60%;
+    --chart-5: 271 80% 70%;
   }
 }
 

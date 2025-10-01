@@ -1,18 +1,46 @@
 import { getEntries } from '@/lib/actions';
-import { WordCloud } from '@/components/overview/WordCloud';
-import { analyzeAdjectives } from '@/ai/flows/analyze-adjectives-flow';
 import { GratitudeIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { type JournalEntry } from '@/lib/types';
+import { MoodsChart } from '@/components/overview/MoodsChart';
 
 export const revalidate = 0; // Re-evaluate on every request
 
+const moodMap = {
+  1: { label: 'Awful' },
+  2: { label: 'Okay' },
+  3: { label: 'Good' },
+  4: { label: 'Great' },
+  5: { label: 'Awesome' },
+};
+
+function processMoodData(entries: JournalEntry[]) {
+  const currentYear = new Date().getFullYear();
+  
+  const moodCounts = entries
+    .filter(entry => new Date(entry.date).getFullYear() === currentYear)
+    .reduce((acc, entry) => {
+      const mood = entry.moodScore;
+      acc[mood] = (acc[mood] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+
+  const chartData = Object.entries(moodMap)
+    .map(([score, { label }]) => ({
+      name: label,
+      count: moodCounts[parseInt(score, 10)] || 0,
+    }))
+    .reverse(); // Reverse to show Awesome at the top
+
+  return chartData;
+}
+
 export default async function OverviewPage() {
   const entries = await getEntries();
-  const entryTexts = entries.map((entry) => entry.text);
-  const analysis = await analyzeAdjectives({ entries: entryTexts });
+  const moodData = processMoodData(entries);
 
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
@@ -26,25 +54,25 @@ export default async function OverviewPage() {
           </Button>
           <GratitudeIcon className="mx-auto h-12 w-12 text-primary" />
           <h1 className="text-4xl font-headline font-bold text-primary">Yearly Overview</h1>
-          <p className="text-muted-foreground">A linguistic look at your year in gratitude.</p>
+          <p className="text-muted-foreground">A look at your moods throughout the year.</p>
         </header>
 
         <section>
           <Card>
             <CardHeader>
-              <CardTitle>Adjective Word Cloud</CardTitle>
+              <CardTitle>Your Moods This Year</CardTitle>
               <CardDescription>
-                The adjectives you've used most frequently. The larger and bolder the word, the more you've used it.
+                This chart shows the number of times you've recorded each mood in the current year.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              {analysis && analysis.adjectives.length > 0 ? (
-                <WordCloud data={analysis.adjectives} />
+              {entries.length > 0 ? (
+                <MoodsChart data={moodData} />
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
                   <p className="text-muted-foreground">Not enough data to create an analysis.</p>
                   <p className="text-muted-foreground">
-                    Write a few more entries to see your adjective map.
+                    Write a few more entries to see your mood summary.
                   </p>
                 </div>
               )}
