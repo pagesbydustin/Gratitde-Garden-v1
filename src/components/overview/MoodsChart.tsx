@@ -1,6 +1,6 @@
 'use client';
 
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, LabelList } from 'recharts';
 
 import {
   ChartConfig,
@@ -48,7 +48,7 @@ export function MoodsChart({ data }: MoodChartProps) {
             layout="vertical"
             margin={{
                 top: 5,
-                right: 20,
+                right: 30, // Increased right margin for label
                 left: 20,
                 bottom: 5,
             }}
@@ -72,7 +72,15 @@ export function MoodsChart({ data }: MoodChartProps) {
             radius={5}
             fill="hsl(var(--primary))"
             barSize={32}
-          />
+          >
+            <LabelList
+                dataKey="count"
+                position="right"
+                offset={8}
+                className="fill-foreground text-sm"
+                formatter={(value: number) => (value > 0 ? value : '')}
+            />
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </ChartContainer>
