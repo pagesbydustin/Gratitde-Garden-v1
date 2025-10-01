@@ -14,11 +14,10 @@ export function GratitudeIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" />
-      <path d="M12 16v-4" />
-      <path d="M12 8h.01" />
-      <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z" opacity="0" />
-      <path d="M12.5 13.062V16h-1v-2.938A4.528 4.528 0 0 1 8 8.5a4.5 4.5 0 0 1 4.5-4.5 4.5 4.5 0 0 1 3.5 7.062" />
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+      <path d="M8.5 12a5.93 5.93 0 0 0 4-8.5" />
+      <path d="M15.5 12a5.93 5.93 0 0 1-4 8.5" />
+      <path d="M12 15.5a5.93 5.93 0 0 0 0-7" />
     </svg>
   );
 }
