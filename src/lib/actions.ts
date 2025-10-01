@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { getSimilarMoodEntries } from '@/ai/flows/ai-mood-entry-inspiration';
 import type { JournalEntry } from '@/lib/types';
 
 // This is a mock in-memory store. In a real app, you would use a database like Firestore.
@@ -60,23 +59,4 @@ export async function addEntry(data: { text: string; moodScore: number; prompt?:
   entries.unshift(newEntry);
   revalidatePath('/');
   return { success: true, entry: newEntry };
-}
-
-export async function getInspiration(currentMoodScore: number) {
-  if (entries.length < 2) {
-    return { similarEntries: [] };
-  }
-  
-  const pastEntriesForAI = entries.map(({ id, moodScore, text }) => ({ id, moodScore, text }));
-
-  try {
-    const result = await getSimilarMoodEntries({
-      currentMoodScore,
-      pastEntries: pastEntriesForAI,
-    });
-    return result;
-  } catch (error) {
-    console.error('Error getting AI inspiration:', error);
-    return { similarEntries: [] };
-  }
 }

@@ -46,7 +46,7 @@ async function NewEntrySection() {
     latestEntryDate.getMonth() === today.getMonth() &&
     latestEntryDate.getFullYear() === today.getFullYear();
 
-  return <NewEntryForm dailyPrompt={prompt} allEntries={entries} hasPostedToday={hasPostedToday} />;
+  return <NewEntryForm dailyPrompt={prompt} hasPostedToday={hasPostedToday} />;
 }
 
 async function PastEntriesSection() {

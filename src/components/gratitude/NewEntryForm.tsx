@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Bot, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,11 +18,10 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { addEntry, getInspiration } from '@/lib/actions';
+import { addEntry } from '@/lib/actions';
 import { type JournalEntry } from '@/lib/types';
 
 import { MoodSelector } from './MoodSelector';
-import { InspirationDialog } from './InspirationDialog';
 import { Skeleton } from '../ui/skeleton';
 
 const formSchema = z.object({
@@ -32,16 +31,12 @@ const formSchema = z.object({
 
 type NewEntryFormProps = {
   dailyPrompt: string;
-  allEntries: JournalEntry[];
   hasPostedToday: boolean;
 };
 
-export function NewEntryForm({ dailyPrompt, allEntries, hasPostedToday }: NewEntryFormProps) {
+export function NewEntryForm({ dailyPrompt, hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [isAiPending, startAiTransition] = useTransition();
   const { toast } = useToast();
-  const [inspiration, setInspiration] = useState<JournalEntry[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,19 +65,6 @@ export function NewEntryForm({ dailyPrompt, allEntries, hasPostedToday }: NewEnt
     });
   };
 
-  const handleGetInspiration = () => {
-    startAiTransition(async () => {
-      const moodScore = form.getValues('moodScore');
-      const result = await getInspiration(moodScore);
-      const inspiredEntries = result.similarEntries.map(
-        (inspired) => allEntries.find((e) => e.id === inspired.id)!
-      ).filter(Boolean);
-      
-      setInspiration(inspiredEntries);
-      setIsDialogOpen(true);
-    });
-  };
-
   if (hasPostedToday) {
     return (
         <Card className="text-center">
@@ -96,12 +78,6 @@ export function NewEntryForm({ dailyPrompt, allEntries, hasPostedToday }: NewEnt
 
   return (
     <>
-      <InspirationDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        entries={inspiration}
-        isLoading={isAiPending}
-      />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card>
@@ -143,24 +119,6 @@ export function NewEntryForm({ dailyPrompt, allEntries, hasPostedToday }: NewEnt
                     />
 
                     <div className="flex flex-col sm:flex-row justify-end gap-4">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleGetInspiration}
-                            disabled={isAiPending || allEntries.length < 2}
-                        >
-                            {isAiPending ? (
-                                <>
-                                    <Bot className="mr-2 h-4 w-4 animate-spin" />
-                                    Thinking...
-                                </>
-                            ) : (
-                                <>
-                                    <Bot className="mr-2 h-4 w-4" />
-                                    Get AI Inspiration
-                                </>
-                            )}
-                        </Button>
                         <Button type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save Entry'}
                             <Sparkles className="ml-2 h-4 w-4" />
@@ -192,7 +150,6 @@ NewEntryForm.Skeleton = function NewEntryFormSkeleton() {
                         <Skeleton className="h-36 w-full" />
                     </div>
                     <div className="flex justify-end gap-4">
-                        <Skeleton className="h-10 w-40" />
                         <Skeleton className="h-10 w-32" />
                     </div>
                 </CardContent>
