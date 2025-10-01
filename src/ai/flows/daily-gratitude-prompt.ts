@@ -16,7 +16,15 @@ const DailyPromptOutputSchema = z.object({
 export type DailyPromptOutput = z.infer<typeof DailyPromptOutputSchema>;
 
 export async function generateDailyPrompt(): Promise<DailyPromptOutput> {
-  return dailyGratitudePromptFlow();
+  try {
+    return await dailyGratitudePromptFlow();
+  } catch (error) {
+    console.error('Error generating daily prompt:', error);
+    // Return a fallback prompt if the AI call fails
+    return {
+      prompt: 'What is something that made you smile today?',
+    };
+  }
 }
 
 const prompt = ai.definePrompt({
