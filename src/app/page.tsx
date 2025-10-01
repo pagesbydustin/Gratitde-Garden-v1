@@ -16,9 +16,7 @@ export default function Home() {
             <p className="text-muted-foreground">Cultivate joy, one entry at a time.</p>
         </header>
         
-        <Suspense fallback={<NewEntryForm.Skeleton />}>
-          <NewEntrySection />
-        </Suspense>
+        <NewEntrySection />
 
         <section className="space-y-6">
           <h2 className="text-3xl font-headline font-semibold">Past Entries</h2>

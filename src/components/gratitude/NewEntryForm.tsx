@@ -21,7 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 import { addEntry } from '@/lib/actions';
 
 import { MoodSelector } from './MoodSelector';
-import { Skeleton } from '../ui/skeleton';
 
 const formSchema = z.object({
   moodScore: z.number().min(1).max(5).default(3),
@@ -127,30 +126,4 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
       </Form>
     </>
   );
-}
-
-NewEntryForm.Skeleton = function NewEntryFormSkeleton() {
-    return (
-        <div className="space-y-8">
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-3/4" />
-                    <Skeleton className="h-6 w-full mt-2" />
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Skeleton className="h-5 w-1/4" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                    <div className="space-y-2">
-                        <Skeleton className="h-5 w-1/4" />
-                        <Skeleton className="h-36 w-full" />
-                    </div>
-                    <div className="flex justify-end gap-4">
-                        <Skeleton className="h-10 w-32" />
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
 }
