@@ -8,10 +8,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { EntryCard } from '@/components/gratitude/EntryCard';
-import { GratitudeIcon } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 
 export const revalidate = 0;
 
@@ -38,13 +34,6 @@ export default async function ArchivePage() {
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
       <main className="w-full max-w-2xl px-4 py-8 md:py-12 space-y-12">
         <header className="relative text-center space-y-2">
-          <Button asChild variant="ghost" className="absolute left-0 top-0">
-            <Link href="/">
-              <ArrowLeft />
-              Back
-            </Link>
-          </Button>
-          <GratitudeIcon className="mx-auto h-12 w-12 text-primary" />
           <h1 className="text-4xl font-headline font-bold text-primary">Weekly Archive</h1>
           <p className="text-muted-foreground">A look back at your journey.</p>
         </header>

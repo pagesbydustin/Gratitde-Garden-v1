@@ -3,6 +3,7 @@ import { Lora } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import { GlobalHeader } from '@/components/layout/GlobalHeader';
 
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased', lora.variable)}>
+        <GlobalHeader />
         {children}
         <Toaster />
       </body>
