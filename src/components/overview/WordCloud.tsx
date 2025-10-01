@@ -46,7 +46,7 @@ export function WordCloud({ data }: WordCloudProps) {
         return (
           <span
             key={adjective}
-            className="transition-all duration-300 ease-in-out hover:scale-110 hover:opacity-75"
+            className="transition-all duration-300 ease-in-out hover:scale-110 opacity-75 hover:opacity-100"
             style={{
               fontSize: `${fontSize}rem`,
               fontWeight: fontWeight,
