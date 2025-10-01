@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Frown, Meh, Smile, SmilePlus, Laugh, Calendar, Quote } from 'lucide-react';
+import { Frown, Meh, Smile, SmilePlus, Laugh, Calendar } from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { type JournalEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
@@ -60,12 +60,6 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
             </div>
         </CardHeader>
         <CardContent>
-            {entry.prompt && (
-                <blockquote className="mb-4 pl-4 border-l-2 border-primary italic text-muted-foreground">
-                    <Quote className="inline-block h-4 w-4 mr-2" />
-                    {entry.prompt}
-                </blockquote>
-            )}
             <p className="text-foreground/90 whitespace-pre-wrap">{entry.text}</p>
         </CardContent>
         </Card>

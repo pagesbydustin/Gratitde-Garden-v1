@@ -1,10 +1,8 @@
 import { Suspense } from 'react';
-import { generateDailyPrompt } from '@/ai/flows/daily-gratitude-prompt';
 import { getEntries } from '@/lib/actions';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { GratitudeIcon } from '@/components/icons';
-import Loading from './loading';
 
 export const revalidate = 0;
 
@@ -34,10 +32,7 @@ export default function Home() {
 }
 
 async function NewEntrySection() {
-  const [{ prompt }, entries] = await Promise.all([
-    generateDailyPrompt(),
-    getEntries(),
-  ]);
+  const entries = await getEntries();
 
   const latestEntryDate = entries.length > 0 ? new Date(entries[0].date) : new Date(0);
   const today = new Date();
@@ -46,7 +41,7 @@ async function NewEntrySection() {
     latestEntryDate.getMonth() === today.getMonth() &&
     latestEntryDate.getFullYear() === today.getFullYear();
 
-  return <NewEntryForm dailyPrompt={prompt} hasPostedToday={hasPostedToday} />;
+  return <NewEntryForm hasPostedToday={hasPostedToday} />;
 }
 
 async function PastEntriesSection() {

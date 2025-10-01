@@ -19,7 +19,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { addEntry } from '@/lib/actions';
-import { type JournalEntry } from '@/lib/types';
 
 import { MoodSelector } from './MoodSelector';
 import { Skeleton } from '../ui/skeleton';
@@ -30,11 +29,10 @@ const formSchema = z.object({
 });
 
 type NewEntryFormProps = {
-  dailyPrompt: string;
   hasPostedToday: boolean;
 };
 
-export function NewEntryForm({ dailyPrompt, hasPostedToday }: NewEntryFormProps) {
+export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -48,7 +46,7 @@ export function NewEntryForm({ dailyPrompt, hasPostedToday }: NewEntryFormProps)
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     startTransition(async () => {
-      const result = await addEntry({ ...values, prompt: dailyPrompt });
+      const result = await addEntry({ ...values });
       if (result.success) {
         toast({
           title: 'Entry Saved!',
@@ -70,7 +68,7 @@ export function NewEntryForm({ dailyPrompt, hasPostedToday }: NewEntryFormProps)
         <Card className="text-center">
             <CardHeader>
                 <CardTitle>See you tomorrow!</CardTitle>
-                <CardDescription>You've already recorded your gratitude for today. Come back tomorrow for a new prompt.</CardDescription>
+                <CardDescription>You've already recorded your gratitude for today. Come back tomorrow to write a new entry.</CardDescription>
             </CardHeader>
         </Card>
     );
@@ -83,7 +81,6 @@ export function NewEntryForm({ dailyPrompt, hasPostedToday }: NewEntryFormProps)
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline text-3xl">Today's Reflection</CardTitle>
-                    <CardDescription className="pt-2 text-lg italic">"{dailyPrompt}"</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <FormField
