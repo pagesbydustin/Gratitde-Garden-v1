@@ -1,8 +1,10 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { getEntries } from '@/lib/actions';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { GratitudeIcon } from '@/components/icons';
+import { Button } from '@/components/ui/button';
 
 export const revalidate = 0;
 
@@ -19,7 +21,12 @@ export default function Home() {
         <NewEntrySection />
 
         <section className="space-y-6">
-          <h2 className="text-3xl font-headline font-semibold">Past Entries</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-headline font-semibold">Past Entries</h2>
+            <Button asChild variant="outline">
+              <Link href="/archive">View Archive</Link>
+            </Button>
+          </div>
           <Suspense fallback={<EntryList.Skeleton />}>
             <PastEntriesSection />
           </Suspense>
