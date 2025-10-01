@@ -23,15 +23,31 @@ const moodMap = {
 
 export function EntryCard({ entry, priority = false }: EntryCardProps) {
     const [isVisible, setIsVisible] = useState(priority);
+    const [formattedDate, setFormattedDate] = useState('');
+
     const MoodIcon = moodMap[entry.moodScore as keyof typeof moodMap].icon;
     const moodColor = moodMap[entry.moodScore as keyof typeof moodMap].color;
     const moodLabel = moodMap[entry.moodScore as keyof typeof moodMap].label;
     
     useEffect(() => {
-        if (priority) return;
-        const timer = setTimeout(() => setIsVisible(true), 100);
-        return () => clearTimeout(timer);
+        if (!priority) {
+            const timer = setTimeout(() => setIsVisible(true), 100);
+            return () => clearTimeout(timer);
+        } else {
+            setIsVisible(true);
+        }
     }, [priority]);
+
+    useEffect(() => {
+        setFormattedDate(
+            new Date(entry.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'UTC', // Use a consistent timezone
+            })
+        );
+    }, [entry.date]);
 
   return (
     <article
@@ -46,11 +62,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <time dateTime={entry.date}>
-                {new Date(entry.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                })}
+                    {formattedDate}
                 </time>
             </div>
             <Badge variant="outline" className={cn("border-none", moodColor)}>
