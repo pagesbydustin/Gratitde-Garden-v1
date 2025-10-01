@@ -40,6 +40,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [formattedDate, setFormattedDate] = useState('');
+    const [isToday, setIsToday] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -64,12 +65,20 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     }, [priority]);
 
     useEffect(() => {
+        const entryDate = new Date(entry.date);
+        const today = new Date();
+
+        // Check if the entry is from today, ignoring the time part.
+        const isEntryDateToday = entryDate.getFullYear() === today.getFullYear() &&
+                                 entryDate.getMonth() === today.getMonth() &&
+                                 entryDate.getDate() === today.getDate();
+        setIsToday(isEntryDateToday);
+
         setFormattedDate(
-            new Date(entry.date).toLocaleDateString('en-US', {
+            entryDate.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
-                timeZone: 'UTC',
             })
         );
     }, [entry.date]);
@@ -165,10 +174,12 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
                                         <MoodIcon className={cn("mr-2 h-4 w-4", moodColor)} />
                                         {moodLabel}
                                     </Badge>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditing(true)}>
-                                        <Pencil className="h-4 w-4" />
-                                        <span className="sr-only">Edit Entry</span>
-                                    </Button>
+                                    {isToday && (
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditing(true)}>
+                                            <Pencil className="h-4 w-4" />
+                                            <span className="sr-only">Edit Entry</span>
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>
