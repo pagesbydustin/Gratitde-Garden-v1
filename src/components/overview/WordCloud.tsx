@@ -35,9 +35,24 @@ export function WordCloud({ data }: WordCloudProps) {
   const minFontWeight = 300;
   const maxFontWeight = 800;
 
+  // Sort words to place larger ones in the center
+  const sortedData: AdjectiveData[] = [];
+  const originalData = [...data]; // data is already sorted by count descending
+  while(originalData.length > 0) {
+    // Add the largest remaining
+    if (originalData.length > 0) {
+      sortedData.push(originalData.shift()!);
+    }
+    // Add the smallest remaining to the end
+    if (originalData.length > 0) {
+      sortedData.push(originalData.pop()!);
+    }
+  }
+
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-center">
-      {data.map(({ adjective, count }) => {
+      {sortedData.map(({ adjective, count }) => {
         const fontSize = scale(count, minCount, maxCount, minFontSize, maxFontSize);
         const fontWeight = Math.round(scale(count, minCount, maxCount, minFontWeight, maxFontWeight) / 100) * 100;
 
