@@ -1,5 +1,5 @@
 import { getEntries } from '@/lib/actions';
-import { AdjectiveAnalysisChart } from '@/components/overview/AdjectiveAnalysisChart';
+import { WordCloud } from '@/components/overview/WordCloud';
 import { analyzeAdjectives } from '@/ai/flows/analyze-adjectives-flow';
 import { GratitudeIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -32,14 +32,14 @@ export default async function OverviewPage() {
         <section>
           <Card>
             <CardHeader>
-              <CardTitle>Most Used Adjectives</CardTitle>
+              <CardTitle>Adjective Word Cloud</CardTitle>
               <CardDescription>
-                This chart shows the positive and neutral adjectives you've used most frequently in your journal entries.
+                The positive and neutral adjectives you've used most frequently. The larger and bolder the word, the more you've used it.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {analysis && analysis.adjectives.length > 0 ? (
-                <AdjectiveAnalysisChart data={analysis.adjectives} />
+                <WordCloud data={analysis.adjectives} />
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
                   <p className="text-muted-foreground">Not enough data to create an analysis.</p>
