@@ -184,7 +184,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-foreground/90 whitespace-pre-wrap">{entry.text}</p>
+                            <p className="text-foreground/90 whitespace-pre-wrap text-base">{entry.text}</p>
                         </CardContent>
                     </>
                 )}
