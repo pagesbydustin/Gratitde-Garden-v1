@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button';
 import { User as UserIcon, ChevronsUpDown } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 
+/**
+ * A dropdown menu component that allows the user to select a user profile.
+ * The selected user is managed through the `UserContext`.
+ */
 export function UserSelection() {
   const { users, currentUser, setCurrentUser } = useContext(UserContext);
 

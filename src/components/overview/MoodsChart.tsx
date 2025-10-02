@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/chart';
 
 type MoodChartProps = {
+  /** The data for the chart, an array of objects with 'name' and 'count' properties. */
   data: { name: string; count: number }[];
 };
 
@@ -39,6 +40,10 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+/**
+ * A bar chart component that displays the distribution of moods.
+ * Uses Recharts for rendering the chart.
+ */
 export function MoodsChart({ data }: MoodChartProps) {
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">

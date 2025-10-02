@@ -29,9 +29,15 @@ const formSchema = z.object({
 });
 
 type NewEntryFormProps = {
+  /** Whether the user has already posted an entry today. */
   hasPostedToday: boolean;
 };
 
+/**
+ * A form for creating a new journal entry.
+ * It includes a mood selector and a text area for the gratitude reflection.
+ * If the user has already posted today, it displays a "see you tomorrow" message.
+ */
 export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -45,6 +51,10 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
     },
   });
 
+  /**
+   * Handles the submission of the new entry form.
+   * @param values - The form values.
+   */
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (!currentUser) return;
     

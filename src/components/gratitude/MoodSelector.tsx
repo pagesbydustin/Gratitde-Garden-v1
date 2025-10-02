@@ -5,7 +5,9 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 type MoodSelectorProps = {
+  /** The current mood score value (1-5). */
   value: number;
+  /** Callback function to handle mood score changes. */
   onChange: (value: number) => void;
 };
 
@@ -17,6 +19,10 @@ const moods = [
   { value: 5, icon: Laugh, label: 'Awesome' },
 ];
 
+/**
+ * A component that allows users to select a mood on a scale from 1 to 5.
+ * It includes a slider and clickable mood icons.
+ */
 export function MoodSelector({ value, onChange }: MoodSelectorProps) {
   return (
     <div className="space-y-4 pt-2">

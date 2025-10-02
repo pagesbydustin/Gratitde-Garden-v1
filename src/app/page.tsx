@@ -11,7 +11,10 @@ import { UserContext } from '@/context/UserContext';
 import { type JournalEntry } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-
+/**
+ * The main page of the application.
+ * It displays the header, a form for new entries, and a list of this week's entries.
+ */
 export default function Home() {
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
@@ -37,6 +40,10 @@ export default function Home() {
   );
 }
 
+/**
+ * A component that conditionally renders the new entry form.
+ * It checks if the current user has already posted today.
+ */
 function NewEntrySection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -69,6 +76,9 @@ function NewEntrySection() {
   return <NewEntryForm hasPostedToday={hasPostedToday} />;
 }
 
+/**
+ * A component that fetches and displays the journal entries from the current week.
+ */
 function PastEntriesSection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);

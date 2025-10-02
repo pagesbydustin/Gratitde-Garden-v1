@@ -14,6 +14,11 @@ import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/**
+ * Groups journal entries by the starting date of their week.
+ * @param entries - An array of journal entries.
+ * @returns An object where keys are the first day of the week (YYYY-MM-DD) and values are arrays of entries for that week.
+ */
 function groupEntriesByWeek(entries: JournalEntry[]) {
   return entries.reduce((acc, entry) => {
     const entryDate = parseISO(entry.date);
@@ -28,6 +33,10 @@ function groupEntriesByWeek(entries: JournalEntry[]) {
   }, {} as Record<string, JournalEntry[]>);
 }
 
+/**
+ * Renders the archive page, which displays past journal entries grouped by week.
+ * Users can expand each week to see the entries within it.
+ */
 export default function ArchivePage() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);

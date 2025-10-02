@@ -19,7 +19,9 @@ import { Badge } from '../ui/badge';
 import { UserContext } from '@/context/UserContext';
 
 type EntryCardProps = {
+  /** The journal entry data to display. */
   entry: JournalEntry;
+  /** Whether to prioritize the animation of this card. Should be true for the first few cards. */
   priority?: boolean;
 };
 
@@ -36,6 +38,10 @@ const formSchema = z.object({
     moodScore: z.number().min(1).max(5),
 });
 
+/**
+ * A card component that displays a single journal entry.
+ * It includes a view mode and an edit mode for updating the entry.
+ */
 export function EntryCard({ entry, priority = false }: EntryCardProps) {
     const [isVisible, setIsVisible] = useState(priority);
     const [isEditing, setIsEditing] = useState(false);
@@ -78,6 +84,10 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
 
     const canEdit = currentUser && currentUser['can-edit'] && currentUser.id === entry.userId;
 
+    /**
+     * Handles the submission of the updated entry form.
+     * @param values - The updated form values.
+     */
     const onSubmit = (values: z.infer<typeof formSchema>) => {
         if (!canEdit) return;
 
@@ -99,6 +109,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
         });
     };
     
+    /** Handles canceling the edit mode and resetting the form. */
     const handleCancel = () => {
         form.reset({ text: entry.text, moodScore: entry.moodScore });
         setIsEditing(false);

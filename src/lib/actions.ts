@@ -10,7 +10,11 @@ const entriesFilePath = path.join(process.cwd(), 'src/lib/entries.json');
 const usersFilePath = path.join(process.cwd(), 'src/lib/users.json');
 
 
-// A more robust way to handle file reading and writing.
+/**
+ * Reads all journal entries from the JSON file.
+ * Creates the file with an empty array if it doesn't exist.
+ * @returns A promise that resolves to an array of journal entries.
+ */
 async function readEntries(): Promise<JournalEntry[]> {
   try {
     const data = await fs.readFile(entriesFilePath, 'utf-8');
@@ -30,6 +34,10 @@ async function readEntries(): Promise<JournalEntry[]> {
   }
 }
 
+/**
+ * Writes an array of journal entries to the JSON file.
+ * @param entries - The array of entries to write.
+ */
 async function writeEntries(entries: JournalEntry[]): Promise<void> {
   try {
     const data = JSON.stringify(entries, null, 2);
@@ -39,6 +47,10 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
   }
 }
 
+/**
+ * Fetches the list of all users from the JSON file.
+ * @returns A promise that resolves to an array of users.
+ */
 export async function getUsers(): Promise<User[]> {
     try {
         const data = await fs.readFile(usersFilePath, 'utf-8');
@@ -51,6 +63,11 @@ export async function getUsers(): Promise<User[]> {
     }
 }
 
+/**
+ * Fetches all journal entries for a specific user, sorted by date in descending order.
+ * @param userId - The ID of the user whose entries are to be fetched.
+ * @returns A promise that resolves to an array of the user's journal entries.
+ */
 export async function getEntries(userId: number): Promise<JournalEntry[]> {
   const entries = await readEntries();
   const userEntries = entries.filter(entry => entry.userId === userId);
@@ -63,6 +80,11 @@ const entrySchema = z.object({
   userId: z.number(),
 });
 
+/**
+ * Adds a new journal entry.
+ * @param data - The data for the new entry, including text, mood score, and user ID.
+ * @returns A promise that resolves to an object indicating success or failure, along with the new entry or error details.
+ */
 export async function addEntry(data: { text: string; moodScore: number; userId: number; }) {
   const parsedData = entrySchema.safeParse(data);
 
@@ -91,6 +113,11 @@ const updateEntrySchema = entrySchema.extend({
   id: z.string(),
 });
 
+/**
+ * Updates an existing journal entry.
+ * @param data - The updated data for the entry, including the entry ID, text, mood score, and user ID.
+ * @returns A promise that resolves to an object indicating success or failure, along with the updated entry or error details.
+ */
 export async function updateEntry(data: { id: string, text: string; moodScore: number; userId: number; }) {
     const parsedData = updateEntrySchema.safeParse(data);
 

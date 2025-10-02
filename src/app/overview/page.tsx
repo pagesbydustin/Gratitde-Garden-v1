@@ -19,6 +19,11 @@ const moodMap = {
   5: { label: 'Awesome' },
 };
 
+/**
+ * Processes journal entries to count mood occurrences for the current year.
+ * @param entries - An array of journal entries.
+ * @returns An array of objects formatted for the mood chart, with each object containing a mood name and its count.
+ */
 function processMoodData(entries: JournalEntry[]) {
   const currentYear = new Date().getFullYear();
   
@@ -40,6 +45,9 @@ function processMoodData(entries: JournalEntry[]) {
   return chartData;
 }
 
+/**
+ * Renders the overview page, which displays a chart summarizing the user's moods for the current year.
+ */
 export default function OverviewPage() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);

@@ -3,9 +3,14 @@ import { EntryCard } from './EntryCard';
 import { Skeleton } from '../ui/skeleton';
 
 type EntryListProps = {
+  /** An array of journal entries to display. */
   entries: JournalEntry[];
 };
 
+/**
+ * Renders a list of journal entries using the `EntryCard` component.
+ * Displays a message if the list is empty.
+ */
 export function EntryList({ entries }: EntryListProps) {
   if (entries.length === 0) {
     return (
@@ -25,6 +30,10 @@ export function EntryList({ entries }: EntryListProps) {
   );
 }
 
+/**
+ * A skeleton loader component for the `EntryList`.
+ * Used to provide a loading state while entries are being fetched.
+ */
 EntryList.Skeleton = function EntryListSkeleton() {
     return (
         <div className="space-y-6">
