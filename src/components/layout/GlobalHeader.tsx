@@ -44,7 +44,7 @@ export function GlobalHeader() {
         </div>
         
         {/* Right side: Desktop and Mobile Navigation */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
                 {navLinks.map((link) => (
