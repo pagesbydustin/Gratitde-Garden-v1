@@ -10,6 +10,9 @@ import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
 import { UserContext } from '@/context/UserContext';
 import { type JournalEntry } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, Notebook, BarChart } from 'lucide-react';
+
 
 /**
  * The main page of the application.
@@ -25,6 +28,40 @@ export default function Home() {
           <p className="text-muted-foreground">Cultivate joy, one entry at a time.</p>
         </header>
         
+        <section>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-headline">How to Get Started</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-muted-foreground">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <User className="h-5 w-5" />
+                </div>
+                <p>
+                  <strong className="text-foreground">1. Select Your Profile:</strong> Use the dropdown menu in the top right to choose your user profile.
+                </p>
+              </div>
+              <div className="flex items-start gap-4">
+                 <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <Notebook className="h-5 w-5" />
+                </div>
+                <p>
+                  <strong className="text-foreground">2. Record Your Gratitude:</strong> Each day, reflect on what you're thankful for and add a new entry.
+                </p>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <BarChart className="h-5 w-5" />
+                </div>
+                <p>
+                  <strong className="text-foreground">3. Review Your Journey:</strong> Visit the 'Weekly Archive' and 'Yearly Overview' to see your progress.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
         <NewEntrySection />
 
         <section className="space-y-6">
