@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useContext } from 'react';
 import { Frown, Meh, Smile, SmilePlus, Laugh, Calendar, Pencil } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +16,7 @@ import { updateEntry } from '@/lib/actions';
 import { type JournalEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
+import { UserContext } from '@/context/UserContext';
 
 type EntryCardProps = {
   entry: JournalEntry;
@@ -40,8 +41,8 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [formattedDate, setFormattedDate] = useState('');
-    const [isToday, setIsToday] = useState(false);
     const { toast } = useToast();
+    const { currentUser } = useContext(UserContext);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -66,14 +67,6 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
 
     useEffect(() => {
         const entryDate = new Date(entry.date);
-        const today = new Date();
-
-        // Check if the entry is from today, ignoring the time part.
-        const isEntryDateToday = entryDate.getFullYear() === today.getFullYear() &&
-                                 entryDate.getMonth() === today.getMonth() &&
-                                 entryDate.getDate() === today.getDate();
-        setIsToday(isEntryDateToday);
-
         setFormattedDate(
             entryDate.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -83,9 +76,13 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
         );
     }, [entry.date]);
 
+    const canEdit = currentUser && currentUser['can-edit'] && currentUser.id === entry.userId;
+
     const onSubmit = (values: z.infer<typeof formSchema>) => {
+        if (!canEdit) return;
+
         startTransition(async () => {
-            const result = await updateEntry({ id: entry.id, ...values });
+            const result = await updateEntry({ id: entry.id, userId: currentUser!.id, ...values });
             if (result.success) {
                 toast({
                     title: 'Entry Updated!',
@@ -96,7 +93,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
                 toast({
                     variant: 'destructive',
                     title: 'Error',
-                    description: 'There was a problem saving your changes.',
+                    description: result.error?.form?.[0] || 'There was a problem saving your changes.',
                 });
             }
         });
@@ -115,7 +112,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
             )}
         >
             <Card className="w-full overflow-hidden">
-                {isEditing ? (
+                {isEditing && canEdit ? (
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <CardHeader>
@@ -174,7 +171,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
                                         <MoodIcon className={cn("mr-2 h-4 w-4", moodColor)} />
                                         {moodLabel}
                                     </Badge>
-                                    {isToday && (
+                                    {canEdit && (
                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditing(true)}>
                                             <Pencil className="h-4 w-4" />
                                             <span className="sr-only">Edit Entry</span>

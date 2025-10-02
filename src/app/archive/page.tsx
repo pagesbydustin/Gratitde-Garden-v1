@@ -1,3 +1,5 @@
+'use client';
+
 import { getEntries } from '@/lib/actions';
 import { type JournalEntry } from '@/lib/types';
 import { format, startOfWeek, parseISO } from 'date-fns';
@@ -8,8 +10,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { EntryCard } from '@/components/gratitude/EntryCard';
-
-export const revalidate = 0;
+import { useContext, useEffect, useState } from 'react';
+import { UserContext } from '@/context/UserContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function groupEntriesByWeek(entries: JournalEntry[]) {
   return entries.reduce((acc, entry) => {
@@ -25,8 +28,24 @@ function groupEntriesByWeek(entries: JournalEntry[]) {
   }, {} as Record<string, JournalEntry[]>);
 }
 
-export default async function ArchivePage() {
-  const entries = await getEntries();
+export default function ArchivePage() {
+  const { currentUser } = useContext(UserContext);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (currentUser) {
+      setLoading(true);
+      getEntries(currentUser.id).then((userEntries) => {
+        setEntries(userEntries);
+        setLoading(false);
+      });
+    } else {
+      setEntries([]);
+      setLoading(false);
+    }
+  }, [currentUser]);
+
   const groupedEntries = groupEntriesByWeek(entries);
   const sortedWeeks = Object.keys(groupedEntries).sort((a, b) => b.localeCompare(a));
 
@@ -39,7 +58,17 @@ export default async function ArchivePage() {
         </header>
 
         <section>
-          {sortedWeeks.length > 0 ? (
+          {loading ? (
+             <div className="w-full space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+             </div>
+          ) : !currentUser ? (
+             <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
+              <p className="text-muted-foreground">Please select a user to see their archive.</p>
+            </div>
+          ) : sortedWeeks.length > 0 ? (
             <Accordion type="single" collapsible className="w-full space-y-4">
               {sortedWeeks.map((weekKey) => {
                 const weekEntries = groupedEntries[weekKey];

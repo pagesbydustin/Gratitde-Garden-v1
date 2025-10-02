@@ -1,13 +1,16 @@
 
-import { Suspense } from 'react';
+'use client';
+
+import { Suspense, useContext, useEffect, useState } from 'react';
 import { getEntries } from '@/lib/actions';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
 import Image from 'next/image';
 import placeholderImageData from '@/lib/placeholder-images.json';
-
-export const revalidate = 0;
+import { UserContext } from '@/context/UserContext';
+import { type JournalEntry } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
   const { hero } = placeholderImageData;
@@ -44,9 +47,28 @@ export default function Home() {
   );
 }
 
-async function NewEntrySection() {
-  const entries = await getEntries();
+function NewEntrySection() {
+  const { currentUser } = useContext(UserContext);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (currentUser) {
+      setLoading(true);
+      getEntries(currentUser.id).then((userEntries) => {
+        setEntries(userEntries);
+        setLoading(false);
+      });
+    } else {
+      setEntries([]);
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  if (loading) {
+    return <Skeleton className="h-64 w-full" />;
+  }
+  
   const latestEntryDate = entries.length > 0 ? new Date(entries[0].date) : new Date(0);
   const today = new Date();
   const hasPostedToday = 
@@ -57,16 +79,35 @@ async function NewEntrySection() {
   return <NewEntryForm hasPostedToday={hasPostedToday} />;
 }
 
-async function PastEntriesSection() {
-  const entries = await getEntries();
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
-  const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Saturday
+function PastEntriesSection() {
+  const { currentUser } = useContext(UserContext);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+   const [loading, setLoading] = useState(true);
 
-  const currentWeekEntries = entries.filter(entry => {
-    const entryDate = new Date(entry.date);
-    return isWithinInterval(entryDate, { start: weekStart, end: weekEnd });
-  });
+  useEffect(() => {
+    if (currentUser) {
+      setLoading(true);
+      getEntries(currentUser.id).then((userEntries) => {
+        const today = new Date();
+        const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
+        const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Saturday
 
-  return <EntryList entries={currentWeekEntries} />;
+        const currentWeekEntries = userEntries.filter(entry => {
+            const entryDate = new Date(entry.date);
+            return isWithinInterval(entryDate, { start: weekStart, end: weekEnd });
+        });
+        setEntries(currentWeekEntries);
+        setLoading(false);
+      });
+    } else {
+      setEntries([]);
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  if (loading) {
+    return <EntryList.Skeleton />;
+  }
+
+  return <EntryList entries={entries} />;
 }

@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import type { JournalEntry } from '@/lib/types';
+import type { JournalEntry, User } from '@/lib/types';
 import fs from 'fs/promises';
 import path from 'path';
 
 const entriesFilePath = path.join(process.cwd(), 'src/lib/entries.json');
+const usersFilePath = path.join(process.cwd(), 'src/lib/users.json');
+
 
 // A more robust way to handle file reading and writing.
 async function readEntries(): Promise<JournalEntry[]> {
@@ -37,18 +39,31 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
   }
 }
 
+export async function getUsers(): Promise<User[]> {
+    try {
+        const data = await fs.readFile(usersFilePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+            return [];
+        }
+        throw new Error('Failed to read users.');
+    }
+}
 
-export async function getEntries(): Promise<JournalEntry[]> {
+export async function getEntries(userId: number): Promise<JournalEntry[]> {
   const entries = await readEntries();
-  return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const userEntries = entries.filter(entry => entry.userId === userId);
+  return userEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 const entrySchema = z.object({
   text: z.string().min(10, 'Your entry must be at least 10 characters long.').max(1000),
   moodScore: z.number().min(1).max(5),
+  userId: z.number(),
 });
 
-export async function addEntry(data: { text: string; moodScore: number; }) {
+export async function addEntry(data: { text: string; moodScore: number; userId: number; }) {
   const parsedData = entrySchema.safeParse(data);
 
   if (!parsedData.success) {
@@ -76,7 +91,7 @@ const updateEntrySchema = entrySchema.extend({
   id: z.string(),
 });
 
-export async function updateEntry(data: { id: string, text: string; moodScore: number; }) {
+export async function updateEntry(data: { id: string, text: string; moodScore: number; userId: number; }) {
     const parsedData = updateEntrySchema.safeParse(data);
 
     if (!parsedData.success) {
@@ -90,6 +105,11 @@ export async function updateEntry(data: { id: string, text: string; moodScore: n
 
     if (entryIndex === -1) {
         return { success: false, error: { form: ['Entry not found.'] } };
+    }
+    
+    // Ensure the user owns the entry
+    if (entries[entryIndex].userId !== parsedData.data.userId) {
+        return { success: false, error: { form: ['Unauthorized.'] } };
     }
 
     entries[entryIndex] = { ...entries[entryIndex], text, moodScore };

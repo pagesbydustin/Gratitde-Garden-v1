@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addEntry } from '@/lib/actions';
 
 import { MoodSelector } from './MoodSelector';
+import { UserContext } from '@/context/UserContext';
 
 const formSchema = z.object({
   moodScore: z.number().min(1).max(5).default(3),
@@ -34,6 +35,7 @@ type NewEntryFormProps = {
 export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { currentUser } = useContext(UserContext);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,8 +46,10 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    if (!currentUser) return;
+    
     startTransition(async () => {
-      const result = await addEntry({ ...values });
+      const result = await addEntry({ ...values, userId: currentUser.id });
       if (result.success) {
         toast({
           title: 'Entry Saved!',
@@ -61,6 +65,17 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
       }
     });
   };
+
+  if (!currentUser) {
+    return (
+      <Card className="text-center">
+        <CardHeader>
+          <CardTitle>Welcome!</CardTitle>
+          <CardDescription>Please select a user to begin.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   if (hasPostedToday) {
     return (

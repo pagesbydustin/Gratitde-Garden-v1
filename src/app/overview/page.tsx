@@ -1,3 +1,5 @@
+'use client';
+
 import { getEntries } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -5,8 +7,9 @@ import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type JournalEntry } from '@/lib/types';
 import { MoodsChart } from '@/components/overview/MoodsChart';
-
-export const revalidate = 0; // Re-evaluate on every request
+import { useContext, useEffect, useState } from 'react';
+import { UserContext } from '@/context/UserContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const moodMap = {
   1: { label: 'Awful' },
@@ -37,9 +40,26 @@ function processMoodData(entries: JournalEntry[]) {
   return chartData;
 }
 
-export default async function OverviewPage() {
-  const entries = await getEntries();
+export default function OverviewPage() {
+  const { currentUser } = useContext(UserContext);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (currentUser) {
+      setLoading(true);
+      getEntries(currentUser.id).then((userEntries) => {
+        setEntries(userEntries);
+        setLoading(false);
+      });
+    } else {
+      setEntries([]);
+      setLoading(false);
+    }
+  }, [currentUser]);
+
   const moodData = processMoodData(entries);
+  const hasEntries = entries.length > 0;
 
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
@@ -58,7 +78,13 @@ export default async function OverviewPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              {entries.length > 0 ? (
+              {loading ? (
+                <Skeleton className="h-[350px] w-full" />
+              ) : !currentUser ? (
+                <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
+                  <p className="text-muted-foreground">Please select a user to see their overview.</p>
+                </div>
+              ) : hasEntries ? (
                 <MoodsChart data={moodData} />
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">

@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { GratitudeIcon } from '@/components/icons';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UserSelection } from './UserSelection';
 
 export function GlobalHeader() {
   const pathname = usePathname();
@@ -33,17 +34,18 @@ export function GlobalHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <GratitudeIcon className="h-6 w-6 text-primary" />
           <span className="font-bold hidden sm:inline-block">Gratitude Garden</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-2">
-          {navLinks.map((link) => (
-            <NavLink key={link.href} href={link.href} label={link.label} />
-          ))}
+        <nav className="hidden md:flex items-center gap-4">
+            {navLinks.map((link) => (
+                <NavLink key={link.href} href={link.href} label={link.label} />
+            ))}
+            <UserSelection />
         </nav>
 
         {/* Mobile Navigation */}
@@ -57,6 +59,9 @@ export function GlobalHeader() {
             </SheetTrigger>
             <SheetContent side="right">
               <div className="flex flex-col gap-4 pt-8">
+                <div className="px-4">
+                    <UserSelection />
+                </div>
                 {navLinks.map((link) => (
                   <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
                 ))}
