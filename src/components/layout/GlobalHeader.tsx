@@ -34,22 +34,24 @@ export function GlobalHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <div className="mr-auto flex items-center gap-4">
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left side */}
+        <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2">
             <GratitudeIcon className="h-6 w-6 text-primary" />
             <span className="font-bold hidden sm:inline-block">Gratitude Garden</span>
           </Link>
         </div>
         
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-4">
+        {/* Desktop Navigation (Center) */}
+        <nav className="hidden md:flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
                 <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
         </nav>
         
-        <div className="ml-auto flex items-center gap-4">
+        {/* Right side */}
+        <div className="flex items-center gap-4">
             <div className="hidden md:flex">
               <UserSelection />
             </div>
@@ -66,7 +68,7 @@ export function GlobalHeader() {
                 </SheetTrigger>
                 <SheetContent side="right">
                   <SheetHeader>
-                    <SheetTitle>Navigation Menu</SheetTitle>
+                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-4 pt-8">
                     {navLinks.map((link) => (
