@@ -39,38 +39,39 @@ export function GlobalHeader() {
           <GratitudeIcon className="h-6 w-6 text-primary" />
           <span className="font-bold hidden sm:inline-block">Gratitude Garden</span>
         </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-4">
-            {navLinks.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} />
-            ))}
-            <UserSelection />
-        </nav>
-
-        {/* Mobile Navigation */}
-        <div className="md:hidden">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <SheetHeader>
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col gap-4 pt-8">
-                <div className="px-4">
-                    <UserSelection />
-                </div>
+        <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-4">
                 {navLinks.map((link) => (
-                  <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
+                    <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
-              </div>
-            </SheetContent>
-          </Sheet>
+            </nav>
+            <div className="hidden md:flex">
+              <UserSelection />
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden flex items-center">
+              <UserSelection />
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-4 pt-8">
+                    {navLinks.map((link) => (
+                      <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
         </div>
       </div>
     </header>
