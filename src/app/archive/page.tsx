@@ -52,6 +52,11 @@ export default function ArchivePage() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -59,11 +64,11 @@ export default function ArchivePage() {
         setEntries(userEntries);
         setLoading(false);
       });
-    } else {
+    } else if (isClient) { // Only run this part on the client
       setEntries([]);
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, isClient]);
 
   const groupedEntries = groupEntriesByWeek(entries);
   const sortedWeeks = Object.keys(groupedEntries).sort((a, b) => b.localeCompare(a));
@@ -105,7 +110,7 @@ export default function ArchivePage() {
         </header>
 
         <section>
-          {loading ? (
+          {loading || !isClient ? (
              <div className="w-full space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />

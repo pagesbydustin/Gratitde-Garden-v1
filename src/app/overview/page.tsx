@@ -52,6 +52,11 @@ export default function OverviewPage() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -59,11 +64,11 @@ export default function OverviewPage() {
         setEntries(userEntries);
         setLoading(false);
       });
-    } else {
+    } else if (isClient) {
       setEntries([]);
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, isClient]);
 
   const moodData = processMoodData(entries);
   const hasEntries = entries.length > 0;
@@ -85,7 +90,7 @@ export default function OverviewPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              {loading ? (
+              {loading || !isClient ? (
                 <Skeleton className="h-[350px] w-full" />
               ) : !currentUser ? (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">

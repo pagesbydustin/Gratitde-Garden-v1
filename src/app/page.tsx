@@ -99,6 +99,11 @@ function NewEntrySection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -106,13 +111,13 @@ function NewEntrySection() {
         setEntries(userEntries);
         setLoading(false);
       });
-    } else {
+    } else if (isClient) {
       setEntries([]);
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, isClient]);
 
-  if (loading) {
+  if (loading || !isClient) {
     return <Skeleton className="h-64 w-full" />;
   }
   
@@ -133,6 +138,11 @@ function PastEntriesSection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
    const [loading, setLoading] = useState(true);
+   const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (currentUser) {
@@ -148,13 +158,13 @@ function PastEntriesSection() {
         setEntries(currentWeekEntries);
         setLoading(false);
       });
-    } else {
+    } else if (isClient) {
       setEntries([]);
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, isClient]);
 
-  if (loading) {
+  if (loading || !isClient) {
     return <EntryList.Skeleton />;
   }
 
