@@ -5,9 +5,9 @@ import { z } from 'zod';
 import type { JournalEntry, User } from '@/lib/types';
 import fs from 'fs/promises';
 import path from 'path';
+import users from './users.json';
 
 const entriesFilePath = path.join(process.cwd(), 'src/lib/entries.json');
-const usersFilePath = path.join(process.cwd(), 'src/lib/users.json');
 
 
 /**
@@ -52,15 +52,7 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
  * @returns A promise that resolves to an array of users.
  */
 export async function getUsers(): Promise<User[]> {
-    try {
-        const data = await fs.readFile(usersFilePath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
-            return [];
-        }
-        throw new Error('Failed to read users.');
-    }
+    return users as User[];
 }
 
 /**
