@@ -98,10 +98,9 @@ export default function Home() {
 function NewEntrySection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     if (currentUser) {
       getEntries(currentUser.id).then((userEntries) => {
         setEntries(userEntries);
@@ -133,10 +132,9 @@ function NewEntrySection() {
 function PastEntriesSection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-   const [loading, setLoading] = useState(false);
+   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     if (currentUser) {
       getEntries(currentUser.id).then((userEntries) => {
         const today = new Date();
