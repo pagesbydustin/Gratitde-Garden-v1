@@ -230,19 +230,10 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                     />
 
                     <div className="flex flex-col sm:flex-row justify-end gap-4">
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button type="button" variant="ghost" onClick={handleReset} disabled={isPending}>
-                                        Reset
-                                        <RotateCcw className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Clear the form</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <Button type="button" variant="ghost" onClick={handleReset} disabled={isPending}>
+                            Reset
+                            <RotateCcw className="ml-2 h-4 w-4" />
+                        </Button>
                         <Button type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save Entry'}
                             <Sparkles className="ml-2 h-4 w-4" />
