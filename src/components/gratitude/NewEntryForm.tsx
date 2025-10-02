@@ -28,15 +28,12 @@ const formSchema = z.object({
   text: z.string().min(10, 'Please write at least 10 characters.').max(1000),
 });
 
-type NewEntryFormProps = {
-  /** Whether the user has already posted an entry today. */
-  hasPostedToday: boolean;
-};
-
 /**
  * A form for creating a new journal entry.
  * It includes a mood selector and a text area for the gratitude reflection.
  * If the user has already posted today, it displays a "see you tomorrow" message.
+ * @param {object} props - The component props.
+ * @param {boolean} props.hasPostedToday - Whether the user has already posted an entry today.
  */
 export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -112,7 +109,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                         name="moodScore"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel className="text-lg">how did you feel when you woke up?</FormLabel>
+                            <FormLabel className="text-lg">How did you feel when you woke up?</FormLabel>
                             <FormControl>
                                 <MoodSelector value={field.value} onChange={field.onChange} />
                             </FormControl>
