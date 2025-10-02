@@ -102,7 +102,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                         name="moodScore"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel className="text-lg">How are you feeling today?</FormLabel>
+                            <FormLabel className="text-lg">how did you feel when you woke up?</FormLabel>
                             <FormControl>
                                 <MoodSelector value={field.value} onChange={field.onChange} />
                             </FormControl>
