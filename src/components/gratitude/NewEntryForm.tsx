@@ -22,6 +22,7 @@ import { addEntry } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 import { MoodSelector } from './MoodSelector';
 import { UserContext } from '@/context/UserContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const formSchema = z.object({
   moodScore: z.number().min(1).max(5).default(3),
@@ -202,10 +203,19 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                             <FormItem>
                             <div className="flex justify-between items-center">
                                 <FormLabel className="text-lg">What are you grateful for?</FormLabel>
-                                <Button type="button" size="icon" variant={isTranscribing ? 'destructive' : 'outline'} onClick={toggleTranscription}>
-                                    {isTranscribing ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                                    <span className="sr-only">{isTranscribing ? 'Stop Transcribing' : 'Start Transcribing'}</span>
-                                </Button>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button type="button" size="icon" variant={isTranscribing ? 'destructive' : 'outline'} onClick={toggleTranscription}>
+                                          {isTranscribing ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                                          <span className="sr-only">{isTranscribing ? 'Stop Transcribing' : 'Start Transcribing'}</span>
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{isTranscribing ? 'Stop voice transcription' : 'Transcribe with voice'}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                             </div>
                             <FormControl>
                                 <Textarea
@@ -220,10 +230,19 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                     />
 
                     <div className="flex flex-col sm:flex-row justify-end gap-4">
-                        <Button type="button" variant="ghost" onClick={handleReset} disabled={isPending}>
-                            Reset
-                            <RotateCcw className="ml-2 h-4 w-4" />
-                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button type="button" variant="ghost" onClick={handleReset} disabled={isPending}>
+                                        Reset
+                                        <RotateCcw className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Clear the form</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                         <Button type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save Entry'}
                             <Sparkles className="ml-2 h-4 w-4" />
