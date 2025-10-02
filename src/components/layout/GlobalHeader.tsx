@@ -50,15 +50,11 @@ export function GlobalHeader() {
                 {navLinks.map((link) => (
                     <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
+                <UserSelection />
             </nav>
-
-            <div className="hidden md:block">
-              <UserSelection />
-            </div>
 
             {/* Mobile Navigation */}
             <div className="md:hidden flex items-center">
-              <UserSelection />
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className='ml-2'>
@@ -71,6 +67,7 @@ export function GlobalHeader() {
                     <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-4 pt-8">
+                    <UserSelection />
                     {navLinks.map((link) => (
                       <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
                     ))}
