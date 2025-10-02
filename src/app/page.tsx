@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense, useContext, useEffect, useState } from 'react';
-import Image from 'next/image';
+import { GratitudeIcon } from '@/components/icons';
 import { getEntries } from '@/lib/actions';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
@@ -10,7 +10,6 @@ import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
 import { UserContext } from '@/context/UserContext';
 import { type JournalEntry } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import placeholderImage from '@/lib/placeholder-images.json';
 
 
 export default function Home() {
@@ -18,14 +17,7 @@ export default function Home() {
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
       <main className="w-full max-w-2xl px-4 py-8 md:py-12 space-y-12">
         <header className="text-center space-y-4">
-          <Image
-            src={placeholderImage.hero.src}
-            alt="A beautiful flower"
-            width={150}
-            height={150}
-            className="mx-auto rounded-full"
-            data-ai-hint="flower"
-          />
+          <GratitudeIcon className="mx-auto h-24 w-24 text-primary" />
           <h1 className="text-4xl font-headline font-bold text-primary">Gratitude Garden</h1>
           <p className="text-muted-foreground">Cultivate joy, one entry at a time.</p>
         </header>
