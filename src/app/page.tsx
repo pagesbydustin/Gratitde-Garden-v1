@@ -11,7 +11,8 @@ import { UserContext } from '@/context/UserContext';
 import { type JournalEntry } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Notebook, BarChart } from 'lucide-react';
+import { User, Notebook, BarChart, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 
 /**
@@ -19,6 +20,8 @@ import { User, Notebook, BarChart } from 'lucide-react';
  * It displays the header, a form for new entries, and a list of this week's entries.
  */
 export default function Home() {
+  const [showExplanation, setShowExplanation] = useState(true);
+
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
       <main className="w-full max-w-2xl px-4 py-8 md:py-12 space-y-12">
@@ -28,39 +31,50 @@ export default function Home() {
           <p className="text-muted-foreground">Cultivate joy, one entry at a time.</p>
         </header>
         
-        <section>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-headline">How to Get Started</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-muted-foreground">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  <User className="h-5 w-5" />
+        {showExplanation && (
+          <section>
+            <Card className="relative">
+              <CardHeader>
+                <CardTitle className="text-2xl font-headline">How to Get Started</CardTitle>
+                 <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 h-8 w-8"
+                    onClick={() => setShowExplanation(false)}
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                  </Button>
+              </CardHeader>
+              <CardContent className="space-y-4 text-muted-foreground">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <p>
+                    <strong className="text-foreground">1. Select Your Profile:</strong> Use the dropdown menu in the top right to choose your user profile.
+                  </p>
                 </div>
-                <p>
-                  <strong className="text-foreground">1. Select Your Profile:</strong> Use the dropdown menu in the top right to choose your user profile.
-                </p>
-              </div>
-              <div className="flex items-start gap-4">
-                 <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  <Notebook className="h-5 w-5" />
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <Notebook className="h-5 w-5" />
+                  </div>
+                  <p>
+                    <strong className="text-foreground">2. Record Your Gratitude:</strong> Each day, reflect on what you're thankful for and add a new entry.
+                  </p>
                 </div>
-                <p>
-                  <strong className="text-foreground">2. Record Your Gratitude:</strong> Each day, reflect on what you're thankful for and add a new entry.
-                </p>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  <BarChart className="h-5 w-5" />
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <BarChart className="h-5 w-5" />
+                  </div>
+                  <p>
+                    <strong className="text-foreground">3. Review Your Journey:</strong> Visit the 'Weekly Archive' and 'Yearly Overview' to see your progress.
+                  </p>
                 </div>
-                <p>
-                  <strong className="text-foreground">3. Review Your Journey:</strong> Visit the 'Weekly Archive' and 'Yearly Overview' to see your progress.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+              </CardContent>
+            </Card>
+          </section>
+        )}
 
         <NewEntrySection />
 
