@@ -4,7 +4,7 @@ import { useState, useTransition, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, RotateCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +27,10 @@ const formSchema = z.object({
   moodScore: z.number().min(1).max(5).default(3),
   text: z.string().min(10, 'Please write at least 10 characters.').max(1000),
 });
+
+type NewEntryFormProps = {
+    hasPostedToday: boolean;
+};
 
 /**
  * A form for creating a new journal entry.
@@ -71,6 +75,13 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
         });
       }
     });
+  };
+
+  /**
+   * Handles resetting the form to its default values.
+   */
+  const handleReset = () => {
+    form.reset();
   };
 
   if (!currentUser) {
@@ -137,6 +148,10 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                     />
 
                     <div className="flex flex-col sm:flex-row justify-end gap-4">
+                        <Button type="button" variant="ghost" onClick={handleReset} disabled={isPending}>
+                            Reset
+                            <RotateCcw className="ml-2 h-4 w-4" />
+                        </Button>
                         <Button type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save Entry'}
                             <Sparkles className="ml-2 h-4 w-4" />
