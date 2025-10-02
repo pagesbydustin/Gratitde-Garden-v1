@@ -34,28 +34,22 @@ export function GlobalHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        {/* Left side */}
-        <div className="flex-1 flex items-center justify-start">
-          <Link href="/" className="flex items-center gap-2">
-            <GratitudeIcon className="h-6 w-6 text-primary" />
-            <span className="font-bold hidden sm:inline-block">Gratitude Garden</span>
-          </Link>
-        </div>
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left side: Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <GratitudeIcon className="h-6 w-6 text-primary" />
+          <span className="font-bold hidden sm:inline-block">Gratitude Garden</span>
+        </Link>
         
-        {/* Desktop Navigation (Center) */}
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-4">
-            {navLinks.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} />
-            ))}
-        </nav>
-        
-        {/* Right side */}
-        <div className="flex-1 flex items-center justify-end gap-4">
-            {/* Desktop User Selection */}
-            <div className="hidden md:flex">
-              <UserSelection />
-            </div>
+        {/* Right side: Desktop and Mobile Navigation */}
+        <div>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-4">
+                {navLinks.map((link) => (
+                    <NavLink key={link.href} href={link.href} label={link.label} />
+                ))}
+                <UserSelection />
+            </nav>
 
             {/* Mobile Navigation */}
             <div className="md:hidden flex items-center">
