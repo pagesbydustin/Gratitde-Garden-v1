@@ -98,11 +98,11 @@ export default function Home() {
 function NewEntrySection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     if (currentUser) {
-      setLoading(true);
       getEntries(currentUser.id).then((userEntries) => {
         setEntries(userEntries);
         setLoading(false);
@@ -133,11 +133,11 @@ function NewEntrySection() {
 function PastEntriesSection() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-   const [loading, setLoading] = useState(true);
+   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     if (currentUser) {
-      setLoading(true);
       getEntries(currentUser.id).then((userEntries) => {
         const today = new Date();
         const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday

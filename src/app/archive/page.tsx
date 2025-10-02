@@ -51,11 +51,11 @@ const moodMap = {
 export default function ArchivePage() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     if (currentUser) {
-      setLoading(true);
       getEntries(currentUser.id).then((userEntries) => {
         setEntries(userEntries);
         setLoading(false);

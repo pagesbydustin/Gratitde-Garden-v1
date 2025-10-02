@@ -51,11 +51,11 @@ function processMoodData(entries: JournalEntry[]) {
 export default function OverviewPage() {
   const { currentUser } = useContext(UserContext);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     if (currentUser) {
-      setLoading(true);
       getEntries(currentUser.id).then((userEntries) => {
         setEntries(userEntries);
         setLoading(false);
