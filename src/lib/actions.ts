@@ -4,8 +4,6 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { JournalEntry, User } from '@/lib/types';
-import fs from 'fs/promises';
-import path from 'path';
 import usersData from './users.json';
 import entriesData from './entries.json';
 
