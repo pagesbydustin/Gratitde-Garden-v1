@@ -6,7 +6,7 @@ A simple application to cultivate joy and reflection, one entry at a time. This 
 
 - **Daily Gratitude Entries:** Write down what you're thankful for each day.
 - **Mood Tracking:** Record your mood with each entry to see how your gratitude practice affects your well-being.
-- **AI-Generated Prompts:** Get inspired with unique, AI-powered gratitude prompts.
+- **AI-Powered Prompts:** The application includes a feature for generating unique, AI-powered gratitude prompts to inspire reflection.
 - **Weekly Archive:** Review your past entries, grouped by week.
 - **Yearly Overview:** Visualize your mood trends over the year with a simple chart.
 - **User Profiles:** Switch between different users.
@@ -15,7 +15,7 @@ A simple application to cultivate joy and reflection, one entry at a time. This 
 ## Getting Started
 
 1.  **Select a User:** Use the user selection dropdown in the header to choose a profile.
-2.  **Write an Entry:** Fill out the form on the homepage to record your daily gratitude and mood. A new AI-powered prompt will be suggested for you each day.
+2.  **Write an Entry:** Fill out the form on the homepage to record your daily gratitude and mood.
 3.  **Explore:** Check out the "Weekly Archive" and "Yearly Overview" pages to reflect on your journey.
 
 ## Tech Stack
