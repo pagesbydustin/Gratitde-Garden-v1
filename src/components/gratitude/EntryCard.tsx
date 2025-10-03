@@ -17,6 +17,7 @@ import { type JournalEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { UserContext } from '@/context/UserContext';
+import { format } from 'date-fns';
 
 type EntryCardProps = {
   /** The journal entry data to display. */
@@ -72,14 +73,10 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     }, [priority]);
 
     useEffect(() => {
+        // Parse the ISO string and then format it.
+        // This ensures the date is displayed in the user's local timezone.
         const entryDate = new Date(entry.date);
-        setFormattedDate(
-            entryDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-            })
-        );
+        setFormattedDate(format(entryDate, 'MMMM d, yyyy'));
     }, [entry.date]);
 
     const canEdit = currentUser && currentUser['can-edit'] && currentUser.id === entry.userId;

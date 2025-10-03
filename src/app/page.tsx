@@ -121,12 +121,13 @@ function NewEntrySection() {
     return <Skeleton className="h-64 w-full" />;
   }
   
-  const latestEntryDate = entries.length > 0 ? new Date(entries[0].date) : new Date(0);
-  const today = new Date();
-  const hasPostedToday = 
-    latestEntryDate.getDate() === today.getDate() &&
-    latestEntryDate.getMonth() === today.getMonth() &&
-    latestEntryDate.getFullYear() === today.getFullYear();
+  const hasPostedToday = entries.some(entry => {
+    const entryDate = new Date(entry.date);
+    const today = new Date();
+    return entryDate.getFullYear() === today.getFullYear() &&
+           entryDate.getMonth() === today.getMonth() &&
+           entryDate.getDate() === today.getDate();
+  });
 
   return <NewEntryForm hasPostedToday={hasPostedToday} />;
 }
