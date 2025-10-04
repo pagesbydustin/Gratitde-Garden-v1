@@ -5,7 +5,14 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { JournalEntry, User } from '@/lib/types';
 import usersData from './users.json';
-import entriesData from './entries.json';
+import initialEntries from './entries.json';
+
+// In-memory store for entries to simulate a database.
+// This will reset when the server instance restarts.
+let entriesData: JournalEntry[] = initialEntries.map(entry => ({
+  ...entry,
+  date: new Date(entry.date).toISOString(),
+}));
 
 /**
  * Fetches the list of all users.
@@ -22,11 +29,7 @@ export async function getUsers(): Promise<User[]> {
  * @returns A promise that resolves to an array of the user's journal entries.
  */
 export async function getEntries(userId: number): Promise<JournalEntry[]> {
-  const entries = (entriesData as JournalEntry[]).map(entry => ({
-    ...entry,
-    date: new Date(entry.date).toISOString(),
-  }));
-  const userEntries = entries.filter(entry => entry.userId === userId);
+  const userEntries = entriesData.filter(entry => entry.userId === userId);
   return userEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
@@ -37,8 +40,7 @@ const entrySchema = z.object({
 });
 
 /**
- * Adds a new journal entry.
- * Note: This function is a placeholder and does not persist data on a read-only filesystem.
+ * Adds a new journal entry to the in-memory store.
  * @param data - The data for the new entry, including text, mood score, and user ID.
  * @returns A promise that resolves to an object indicating success or failure.
  */
@@ -49,13 +51,14 @@ export async function addEntry(data: { text: string; moodScore: number; userId: 
     return { success: false, error: parsedData.error.flatten().fieldErrors };
   }
 
-  // In a real application, this would write to a database.
-  // On a read-only filesystem like Netlify, we simulate success without writing.
   const newEntry: JournalEntry = {
     id: crypto.randomUUID(),
     date: new Date().toISOString(),
     ...parsedData.data,
   };
+
+  // Add the new entry to our in-memory store
+  entriesData.push(newEntry);
 
   revalidatePath('/');
   revalidatePath('/overview');
@@ -68,8 +71,7 @@ const updateEntrySchema = entrySchema.extend({
 });
 
 /**
- * Updates an existing journal entry.
- * Note: This function is a placeholder and does not persist data on a read-only filesystem.
+ * Updates an existing journal entry in the in-memory store.
  * @param data - The updated data for the entry.
  * @returns A promise that resolves to an object indicating success or failure.
  */
@@ -80,17 +82,18 @@ export async function updateEntry(data: { id: string, text: string; moodScore: n
         return { success: false, error: parsedData.error.flatten().fieldErrors };
     }
 
-    // In a real application, you would find and update the entry in a database.
-    // We will simulate success.
-    const { id, text, moodScore, userId } = parsedData.data;
+    const { id, ...values } = parsedData.data;
 
-    const updatedEntry: JournalEntry = {
-        id,
-        text,
-        moodScore,
-        userId,
-        date: new Date().toISOString(), // This would typically be the original date
-    };
+    const entryIndex = entriesData.findIndex(entry => entry.id === id);
+
+    if (entryIndex === -1) {
+      return { success: false, error: { form: ['Entry not found.'] } };
+    }
+
+    // Update the entry in our in-memory store
+    const updatedEntry = { ...entriesData[entryIndex], ...values };
+    entriesData[entryIndex] = updatedEntry;
+
 
     revalidatePath('/');
     revalidatePath('/overview');
