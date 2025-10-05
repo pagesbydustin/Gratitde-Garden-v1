@@ -58,7 +58,7 @@ export async function addEntry(data: { text: string; moodScore: number; userId: 
   };
 
   // Add the new entry to our in-memory store
-  entriesData.push(newEntry);
+  entriesData.unshift(newEntry);
 
   revalidatePath('/');
   revalidatePath('/overview');
