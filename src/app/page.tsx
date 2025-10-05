@@ -109,9 +109,9 @@ function NewEntrySection() {
   const hasPostedToday = entries.some(entry => {
     const entryDate = new Date(entry.date);
     const today = new Date();
-    return entryDate.getUTCFullYear() === today.getUTCFullYear() &&
-           entryDate.getUTCMonth() === today.getUTCMonth() &&
-           entryDate.getUTCDate() === today.getUTCDate();
+    return entryDate.getFullYear() === today.getFullYear() &&
+           entryDate.getMonth() === today.getMonth() &&
+           entryDate.getDate() === today.getDate();
   });
 
   return <NewEntryForm hasPostedToday={hasPostedToday} />;
