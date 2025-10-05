@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition, useContext } from 'react';
@@ -5,6 +6,7 @@ import { Frown, Meh, Smile, SmilePlus, Laugh, Calendar, Pencil } from 'lucide-re
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format, isToday, parseISO } from 'date-fns';
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +19,6 @@ import { type JournalEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import { UserContext } from '@/context/UserContext';
-import { format } from 'date-fns';
 
 type EntryCardProps = {
   /** The journal entry data to display. */
@@ -77,7 +78,8 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
         setFormattedDate(format(entryDate, 'MMMM d, yyyy'));
     }, [entry.date]);
 
-    const canEdit = currentUser && currentUser['can-edit'] && currentUser.id === entry.userId;
+    const entryIsToday = isToday(parseISO(entry.date));
+    const canEdit = currentUser && currentUser['can-edit'] && currentUser.id === entry.userId && entryIsToday;
 
     /**
      * Handles the submission of the updated entry form.
