@@ -5,8 +5,13 @@
     "can-edit": true
   },
   {
-    "id": 2,
+    "id": 3,
     "name": "Admin",
+    "can-edit": true
+  },
+  {
+    "id": 2,
+    "name": "J.R.",
     "can-edit": true
   }
 ]
