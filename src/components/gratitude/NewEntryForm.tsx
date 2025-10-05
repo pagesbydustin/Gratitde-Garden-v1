@@ -55,6 +55,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [currentDate, setCurrentDate] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const finalTranscriptRef = useRef<string>('');
 
 
   useEffect(() => {
@@ -79,16 +80,14 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
 
         recognition.onresult = (event: any) => {
             let interimTranscript = '';
-            let finalTranscript = form.getValues('text');
-
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + '. ';
+                    finalTranscriptRef.current += event.results[i][0].transcript + '. ';
                 } else {
                     interimTranscript += event.results[i][0].transcript;
                 }
             }
-            form.setValue('text', finalTranscript + interimTranscript);
+            form.setValue('text', finalTranscriptRef.current + interimTranscript);
         };
         
         recognition.onend = () => {
@@ -113,6 +112,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
           description: 'Your gratitude has been recorded.',
         });
         form.reset();
+        finalTranscriptRef.current = '';
       } else {
         toast({
           variant: 'destructive',
@@ -128,6 +128,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
    */
   const handleReset = () => {
     form.reset();
+    finalTranscriptRef.current = '';
   };
 
   const handleToggleRecording = () => {
@@ -144,6 +145,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
           recognitionRef.current.stop();
           setIsRecording(false);
       } else {
+          finalTranscriptRef.current = form.getValues('text');
           recognitionRef.current.start();
           setIsRecording(true);
       }
