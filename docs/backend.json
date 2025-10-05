@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user of the application.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "A unique identifier for the user."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "can-edit": {
+          "type": "boolean",
+          "description": "A flag indicating whether the user has permission to edit entries."
+        }
+      },
+      "required": ["id", "name", "can-edit"]
+    },
+    "JournalEntry": {
+      "title": "Journal Entry",
+      "description": "Represents a single journal entry.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "A unique identifier for the entry."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The ISO 8601 date string of when the entry was created."
+        },
+        "moodScore": {
+          "type": "number",
+          "description": "A numerical score from 1 to 5 representing the user's mood."
+        },
+        "text": {
+          "type": "string",
+          "description": "The text content of the journal entry."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "An optional prompt that inspired the entry."
+        },
+        "userId": {
+          "type": "number",
+          "description": "The ID of the user who created the entry."
+        }
+      },
+      "required": ["id", "date", "moodScore", "text", "userId"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  }
+}
