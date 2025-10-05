@@ -4,12 +4,13 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { JournalEntry, User } from '@/lib/types';
-import usersData from './users.json';
+import initialUsersData from './users.json';
 import fs from 'fs/promises';
 import path from 'path';
 
-// Define the path to the entries.json file
+// Define the paths to the JSON files
 const entriesFilePath = path.join(process.cwd(), 'src', 'lib', 'entries.json');
+const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
 
 /**
  * Reads all entries from the JSON file.
@@ -33,18 +34,40 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
     await fs.writeFile(entriesFilePath, JSON.stringify(entries, null, 2), 'utf-8');
 }
 
+/**
+ * Reads all users from the JSON file.
+ * @returns A promise that resolves to an array of users.
+ */
+async function readUsers(): Promise<User[]> {
+    try {
+        const data = await fs.readFile(usersFilePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        // If the file doesn't exist, create it with initial data
+        await writeUsers(initialUsersData);
+        return initialUsersData as User[];
+    }
+}
+
+/**
+ * Writes an array of users to the JSON file.
+ * @param users - The array of users to write.
+ */
+async function writeUsers(users: User[]): Promise<void> {
+    await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+}
+
 
 /**
  * Fetches the list of all users.
  * @returns A promise that resolves to an array of users.
  */
 export async function getUsers(): Promise<User[]> {
-    return usersData as User[];
+    return await readUsers();
 }
 
 /**
  * Fetches all journal entries for a specific user, sorted by date in descending order.
- * In a real application, this would fetch from a database.
  * @param userId - The ID of the user whose entries are to be fetched.
  * @returns A promise that resolves to an array of the user's journal entries.
  */
@@ -61,8 +84,8 @@ const entrySchema = z.object({
 });
 
 /**
- * Adds a new journal entry to the in-memory store.
- * @param data - The data for the new entry, including text, mood score, and user ID.
+ * Adds a new journal entry.
+ * @param data - The data for the new entry.
  * @returns A promise that resolves to an object indicating success or failure.
  */
 export async function addEntry(data: { text: string; moodScore: number; userId: number; }) {
@@ -93,7 +116,7 @@ const updateEntrySchema = entrySchema.extend({
 });
 
 /**
- * Updates an existing journal entry in the in-memory store.
+ * Updates an existing journal entry.
  * @param data - The updated data for the entry.
  * @returns A promise that resolves to an object indicating success or failure.
  */
@@ -113,7 +136,6 @@ export async function updateEntry(data: { id: string, text: string; moodScore: n
       return { success: false, error: { form: ['Entry not found.'] } };
     }
 
-    // Update the entry in our in-memory store
     const updatedEntry = { ...allEntries[entryIndex], ...values };
     allEntries[entryIndex] = updatedEntry;
     
@@ -126,3 +148,96 @@ export async function updateEntry(data: { id: string, text: string; moodScore: n
     return { success: true, entry: updatedEntry };
 }
 
+const userSchema = z.object({
+    name: z.string().min(2, 'Name must be at least 2 characters long.'),
+    'can-edit': z.boolean(),
+});
+
+/**
+ * Adds a new user.
+ * @param data - The data for the new user.
+ * @returns A promise that resolves to an object indicating success or failure.
+ */
+export async function addUser(data: { name: string; 'can-edit': boolean }) {
+    const parsedData = userSchema.safeParse(data);
+
+    if (!parsedData.success) {
+        return { success: false, error: parsedData.error.flatten().fieldErrors };
+    }
+
+    const users = await readUsers();
+    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+
+    const newUser: User = {
+        id: newId,
+        ...parsedData.data,
+    };
+
+    users.push(newUser);
+    await writeUsers(users);
+
+    revalidatePath('/admin');
+    return { success: true, user: newUser };
+}
+
+const updateUserSchema = userSchema.extend({
+    id: z.number(),
+});
+
+/**
+ * Updates an existing user.
+ * @param data - The updated data for the user.
+ * @returns A promise that resolves to an object indicating success or failure.
+ */
+export async function updateUser(data: { id: number, name: string; 'can-edit': boolean }) {
+    const parsedData = updateUserSchema.safeParse(data);
+
+    if (!parsedData.success) {
+        return { success: false, error: parsedData.error.flatten().fieldErrors };
+    }
+
+    const users = await readUsers();
+    const { id, ...values } = parsedData.data;
+
+    const userIndex = users.findIndex(u => u.id === id);
+
+    if (userIndex === -1) {
+        return { success: false, error: { form: ['User not found.'] } };
+    }
+    
+    if (users[userIndex].name === 'Admin' && values.name !== 'Admin') {
+        return { success: false, error: { form: ['Cannot rename the Admin user.'] } };
+    }
+
+    const updatedUser = { ...users[userIndex], ...values };
+    users[userIndex] = updatedUser;
+
+    await writeUsers(users);
+
+    revalidatePath('/admin');
+    return { success: true, user: updatedUser };
+}
+
+
+/**
+ * Deletes a user.
+ * @param userId - The ID of the user to delete.
+ * @returns A promise that resolves to an object indicating success or failure.
+ */
+export async function deleteUser(userId: number) {
+    const users = await readUsers();
+
+    const userToDelete = users.find(u => u.id === userId);
+    if (!userToDelete) {
+        return { success: false, error: 'User not found.' };
+    }
+    if (userToDelete.name === 'Admin') {
+        return { success: false, error: 'Cannot delete the Admin user.' };
+    }
+
+    const updatedUsers = users.filter(u => u.id !== userId);
+    await writeUsers(updatedUsers);
+
+    revalidatePath('/admin');
+    return { success: true };
+}

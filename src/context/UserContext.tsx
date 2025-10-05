@@ -2,7 +2,7 @@
 
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { type User, type JournalEntry } from '@/lib/types';
-import { getUsers, getEntries as fetchEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry } from '@/lib/actions';
+import { getUsers as apiGetUsers, getEntries as fetchEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry, addUser as apiAddUser, updateUser as apiUpdateUser, deleteUser as apiDeleteUser } from '@/lib/actions';
 
 /**
  * The shape of the UserContext.
@@ -22,6 +22,14 @@ type UserContextType = {
   updateEntry: (data: { id: string, text: string; moodScore: number; }) => Promise<any>;
   /** Loading state for entries */
   loading: boolean;
+  /** Function to add a new user. */
+  addUser: (data: { name: string; 'can-edit': boolean }) => Promise<any>;
+  /** Function to update an existing user. */
+  updateUser: (data: { id: number, name: string; 'can-edit': boolean }) => Promise<any>;
+  /** Function to delete a user. */
+  deleteUser: (userId: number) => Promise<any>;
+  /** Function to refresh the list of users. */
+  refreshUsers: () => Promise<void>;
 };
 
 /**
@@ -35,6 +43,10 @@ export const UserContext = createContext<UserContextType>({
   addEntry: async () => {},
   updateEntry: async () => {},
   loading: true,
+  addUser: async () => {},
+  updateUser: async () => {},
+  deleteUser: async () => {},
+  refreshUsers: async () => {},
 });
 
 /**
@@ -50,20 +62,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchUsers = useCallback(async () => {
+    const fetchedUsers = await apiGetUsers();
+    setUsers(fetchedUsers);
+    return fetchedUsers;
+  }, []);
+
   // Fetch users on initial load
   useEffect(() => {
-    async function fetchUsers() {
-      const fetchedUsers = await getUsers();
-      setUsers(fetchedUsers);
-      if (fetchedUsers.length > 0) {
-        // Try to load from localStorage first
-        const storedUserId = localStorage.getItem('currentUser');
-        const user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : fetchedUsers[0];
-        setCurrentUser(user || fetchedUsers[0]);
-      }
-    }
-    fetchUsers();
-  }, []);
+    fetchUsers().then(fetchedUsers => {
+        if (fetchedUsers.length > 0) {
+            // Try to load from localStorage first
+            const storedUserId = localStorage.getItem('currentUser');
+            const user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : fetchedUsers[0];
+            setCurrentUser(user || fetchedUsers[0]);
+        }
+    });
+  }, [fetchUsers]);
 
   // Fetch entries when the current user changes
   useEffect(() => {
@@ -109,6 +124,39 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
     return result;
   }, [currentUser]);
+  
+  const addUser = useCallback(async (data: { name: string; 'can-edit': boolean }) => {
+    const result = await apiAddUser(data);
+    if (result.success) {
+      await fetchUsers();
+    }
+    return result;
+  }, [fetchUsers]);
+  
+  const updateUser = useCallback(async (data: { id: number; name: string; 'can-edit': boolean }) => {
+    const result = await apiUpdateUser(data);
+    if (result.success) {
+      await fetchUsers();
+       // If the updated user is the current user, update the context
+      if (currentUser && currentUser.id === data.id) {
+          setCurrentUser(result.user);
+      }
+    }
+    return result;
+  }, [fetchUsers, currentUser]);
+
+  const deleteUser = useCallback(async (userId: number) => {
+    const result = await apiDeleteUser(userId);
+    if (result.success) {
+      await fetchUsers();
+      // If the deleted user was the current user, clear it
+      if (currentUser && currentUser.id === userId) {
+        handleSetCurrentUser(null);
+      }
+    }
+    return result;
+  }, [fetchUsers, currentUser]);
+
 
   const value = {
     users,
@@ -118,6 +166,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     addEntry,
     updateEntry,
     loading,
+    addUser,
+    updateUser,
+    deleteUser,
+    refreshUsers: fetchUsers,
   };
 
   return (

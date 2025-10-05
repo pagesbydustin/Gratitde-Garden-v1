@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -9,15 +9,21 @@ import { GratitudeIcon } from '@/components/icons';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserSelection } from './UserSelection';
+import { UserContext } from '@/context/UserContext';
 
 export function GlobalHeader() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { currentUser } = useContext(UserContext);
 
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/overview', label: 'Yearly Overview' },
     { href: '/archive', label: 'Weekly Archive' },
+  ];
+
+  const adminLinks = [
+    { href: '/admin', label: 'User Management' },
   ];
 
   const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => (
@@ -50,6 +56,9 @@ export function GlobalHeader() {
                 {navLinks.map((link) => (
                     <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
+                {currentUser?.name === 'Admin' && adminLinks.map((link) => (
+                    <NavLink key={link.href} href={link.href} label={link.label} />
+                ))}
                 <UserSelection />
             </nav>
 
@@ -69,6 +78,9 @@ export function GlobalHeader() {
                   <div className="flex flex-col gap-4 pt-8">
                     <UserSelection />
                     {navLinks.map((link) => (
+                      <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
+                    ))}
+                    {currentUser?.name === 'Admin' && adminLinks.map((link) => (
                       <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
                     ))}
                   </div>
