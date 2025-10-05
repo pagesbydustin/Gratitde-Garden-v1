@@ -5,7 +5,7 @@ import { useState, useTransition, useContext, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { Sparkles, RotateCcw, Mic, MicOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,14 @@ type NewEntryFormProps = {
     hasPostedToday: boolean;
 };
 
+// Declare the SpeechRecognition type for browser compatibility
+declare global {
+    interface Window {
+        SpeechRecognition: any;
+        webkitSpeechRecognition: any;
+    }
+}
+
 /**
  * A form for creating a new journal entry.
  * It includes a mood selector and a text area for the gratitude reflection.
@@ -46,6 +54,9 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const { toast } = useToast();
   const { currentUser } = useContext(UserContext);
   const [currentDate, setCurrentDate] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
 
   useEffect(() => {
     setCurrentDate(format(new Date(), 'MMMM d, yyyy'));
@@ -59,6 +70,36 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
       text: '',
     },
   });
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event: any) => {
+            let interimTranscript = '';
+            let finalTranscript = form.getValues('text');
+
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + '. ';
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            form.setValue('text', finalTranscript + interimTranscript);
+        };
+        
+        recognition.onend = () => {
+            setIsRecording(false);
+        };
+
+        recognitionRef.current = recognition;
+    }
+  }, [form]);
+
 
   /**
    * Handles the submission of the new entry form.
@@ -90,6 +131,25 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
    */
   const handleReset = () => {
     form.reset();
+  };
+
+  const handleToggleRecording = () => {
+      if (!recognitionRef.current) {
+          toast({
+              variant: 'destructive',
+              title: 'Not Supported',
+              description: 'Your browser does not support speech-to-text.',
+          });
+          return;
+      }
+
+      if (isRecording) {
+          recognitionRef.current.stop();
+          setIsRecording(false);
+      } else {
+          recognitionRef.current.start();
+          setIsRecording(true);
+      }
   };
 
   if (!currentUser) {
@@ -145,6 +205,16 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                             <FormItem>
                             <div className="flex justify-between items-center">
                                 <FormLabel className="text-lg">What are you grateful for?</FormLabel>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleToggleRecording}
+                                    className={cn(isRecording && 'text-red-500 hover:text-red-600')}
+                                >
+                                    {isRecording ? <MicOff /> : <Mic />}
+                                    <span className="sr-only">{isRecording ? 'Stop Recording' : 'Start Recording'}</span>
+                                </Button>
                             </div>
                             <FormControl>
                                 <Textarea
