@@ -1,6 +1,5 @@
 'use client';
 
-import { getEntries } from '@/lib/actions';
 import { type JournalEntry } from '@/lib/types';
 import { format, startOfWeek, parseISO } from 'date-fns';
 import {
@@ -49,27 +48,13 @@ const moodMap = {
  * Users can expand each week to see the entries within it.
  */
 export default function ArchivePage() {
-  const { currentUser } = useContext(UserContext);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, entries, loading } = useContext(UserContext);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      getEntries(currentUser.id).then((userEntries) => {
-        setEntries(userEntries);
-        setLoading(false);
-      });
-    } else if (isClient) { // Only run this part on the client
-      setEntries([]);
-      setLoading(false);
-    }
-  }, [currentUser, isClient]);
-
+  
   const groupedEntries = groupEntriesByWeek(entries);
   const sortedWeeks = Object.keys(groupedEntries).sort((a, b) => b.localeCompare(a));
   
@@ -110,7 +95,7 @@ export default function ArchivePage() {
         </header>
 
         <section>
-          {loading && !isClient ? (
+          {loading || !isClient ? (
              <div className="w-full space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />

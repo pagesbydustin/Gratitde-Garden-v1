@@ -3,7 +3,6 @@
 
 import { Suspense, useContext, useEffect, useState } from 'react';
 import { GratitudeIcon } from '@/components/icons';
-import { getEntries } from '@/lib/actions';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
@@ -96,26 +95,12 @@ export default function Home() {
  * It checks if the current user has already posted today.
  */
 function NewEntrySection() {
-  const { currentUser } = useContext(UserContext);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { entries, loading } = useContext(UserContext);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      getEntries(currentUser.id).then((userEntries) => {
-        setEntries(userEntries);
-        setLoading(false);
-      });
-    } else if (isClient) {
-      setEntries([]);
-      setLoading(false);
-    }
-  }, [currentUser, isClient]);
 
   if (loading || !isClient) {
     return <Skeleton className="h-64 w-full" />;
@@ -124,9 +109,9 @@ function NewEntrySection() {
   const hasPostedToday = entries.some(entry => {
     const entryDate = new Date(entry.date);
     const today = new Date();
-    return entryDate.getFullYear() === today.getFullYear() &&
-           entryDate.getMonth() === today.getMonth() &&
-           entryDate.getDate() === today.getDate();
+    return entryDate.getUTCFullYear() === today.getUTCFullYear() &&
+           entryDate.getUTCMonth() === today.getUTCMonth() &&
+           entryDate.getUTCDate() === today.getUTCDate();
   });
 
   return <NewEntryForm hasPostedToday={hasPostedToday} />;
@@ -136,38 +121,29 @@ function NewEntrySection() {
  * A component that fetches and displays the journal entries from the current week.
  */
 function PastEntriesSection() {
-  const { currentUser } = useContext(UserContext);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-   const [loading, setLoading] = useState(true);
-   const [isClient, setIsClient] = useState(false);
+  const { entries, loading } = useContext(UserContext);
+  const [weekEntries, setWeekEntries] = useState<JournalEntry[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
-      getEntries(currentUser.id).then((userEntries) => {
-        const today = new Date();
-        const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
-        const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Saturday
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Sunday
+    const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Saturday
 
-        const currentWeekEntries = userEntries.filter(entry => {
-            const entryDate = new Date(entry.date);
-            return isWithinInterval(entryDate, { start: weekStart, end: weekEnd });
-        });
-        setEntries(currentWeekEntries);
-        setLoading(false);
-      });
-    } else if (isClient) {
-      setEntries([]);
-      setLoading(false);
-    }
-  }, [currentUser, isClient]);
+    const currentWeekEntries = entries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return isWithinInterval(entryDate, { start: weekStart, end: weekEnd });
+    });
+    setWeekEntries(currentWeekEntries);
+  }, [entries]);
 
   if (loading || !isClient) {
     return <EntryList.Skeleton />;
   }
 
-  return <EntryList entries={entries} />;
+  return <EntryList entries={weekEntries} />;
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { getEntries } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -49,26 +48,12 @@ function processMoodData(entries: JournalEntry[]) {
  * Renders the overview page, which displays a chart summarizing the user's moods for the current year.
  */
 export default function OverviewPage() {
-  const { currentUser } = useContext(UserContext);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, entries, loading } = useContext(UserContext);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      getEntries(currentUser.id).then((userEntries) => {
-        setEntries(userEntries);
-        setLoading(false);
-      });
-    } else if (isClient) {
-      setEntries([]);
-      setLoading(false);
-    }
-  }, [currentUser, isClient]);
 
   const moodData = processMoodData(entries);
   const hasEntries = entries.length > 0;

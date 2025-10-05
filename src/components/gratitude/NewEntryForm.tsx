@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { addEntry } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 import { MoodSelector } from './MoodSelector';
 import { UserContext } from '@/context/UserContext';
@@ -52,7 +51,7 @@ declare global {
 export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, addEntry } = useContext(UserContext);
   const [currentDate, setCurrentDate] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -106,10 +105,8 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
    * @param values - The form values.
    */
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    if (!currentUser) return;
-    
     startTransition(async () => {
-      const result = await addEntry({ ...values, userId: currentUser.id });
+      const result = await addEntry(values);
       if (result.success) {
         toast({
           title: 'Entry Saved!',

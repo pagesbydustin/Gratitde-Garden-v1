@@ -14,7 +14,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { MoodSelector } from './MoodSelector';
 import { useToast } from '@/hooks/use-toast';
-import { updateEntry } from '@/lib/actions';
 import { type JournalEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
@@ -50,7 +49,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     const [isPending, startTransition] = useTransition();
     const [formattedDate, setFormattedDate] = useState('');
     const { toast } = useToast();
-    const { currentUser } = useContext(UserContext);
+    const { currentUser, updateEntry } = useContext(UserContext);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -74,7 +73,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     }, [priority]);
 
     useEffect(() => {
-        const entryDate = new Date(entry.date);
+        const entryDate = parseISO(entry.date);
         setFormattedDate(format(entryDate, 'MMMM d, yyyy'));
     }, [entry.date]);
 
@@ -89,7 +88,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
         if (!canEdit) return;
 
         startTransition(async () => {
-            const result = await updateEntry({ id: entry.id, userId: currentUser!.id, ...values });
+            const result = await updateEntry({ id: entry.id, ...values });
             if (result.success) {
                 toast({
                     title: 'Entry Updated!',
