@@ -1,10 +1,12 @@
+
 'use client';
 
-import { useState, useTransition, useContext, useRef } from 'react';
+import { useState, useTransition, useContext, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Sparkles, RotateCcw } from 'lucide-react';
+import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,6 +45,12 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { currentUser } = useContext(UserContext);
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(format(new Date(), 'MMMM d, yyyy'));
+  }, []);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -113,6 +121,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline text-3xl">Today's Reflection</CardTitle>
+                    <CardDescription>{currentDate}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <FormField
