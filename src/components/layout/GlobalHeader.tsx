@@ -21,9 +21,9 @@ export function GlobalHeader() {
     { href: '/overview', label: 'Yearly Overview' },
     { href: '/archive', label: 'Weekly Archive' },
   ];
-
+  
   const adminLinks = [
-    { href: '/admin', label: 'User Management' },
+    { href: '/admin/dashboard', label: 'Dashboard' },
   ];
 
   const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => (

@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function AdminPage() {
+export default function AdminDashboardPage() {
     const { currentUser, users, deleteUser, refreshUsers } = useContext(UserContext);
     const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -94,15 +94,15 @@ export default function AdminPage() {
         <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
             <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
                 <header className="space-y-2">
-                    <h1 className="text-4xl font-headline font-bold text-primary">User Management</h1>
-                    <p className="text-muted-foreground">Add, edit, or remove user profiles.</p>
+                    <h1 className="text-4xl font-headline font-bold text-primary">Admin Dashboard</h1>
+                    <p className="text-muted-foreground">Manage user profiles and application settings.</p>
                 </header>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle>All Users</CardTitle>
-                            <CardDescription>A list of all users in the system.</CardDescription>
+                            <CardDescription>Add, edit, or remove user profiles.</CardDescription>
                         </div>
                         <Button onClick={handleAddUser}>
                             <UserPlus className="mr-2" />
