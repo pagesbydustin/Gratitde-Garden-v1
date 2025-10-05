@@ -85,7 +85,7 @@ export default function ArchivePage() {
         const moodLabel = moodMap[entry.moodScore as keyof typeof moodMap];
         return `Date: ${entryDate}\nMood: ${moodLabel}\n\n${entry.text}\n\n--------------------------------------\n`;
       })
-      .join('\n');
+      .join('');
   };
 
   /**
@@ -110,7 +110,7 @@ export default function ArchivePage() {
         </header>
 
         <section>
-          {loading || !isClient ? (
+          {loading && !isClient ? (
              <div className="w-full space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />

@@ -73,8 +73,6 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
     }, [priority]);
 
     useEffect(() => {
-        // Parse the ISO string and then format it.
-        // This ensures the date is displayed in the user's local timezone.
         const entryDate = new Date(entry.date);
         setFormattedDate(format(entryDate, 'MMMM d, yyyy'));
     }, [entry.date]);
