@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useContext, useTransition } from 'react';
+import { useEffect, useContext, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -38,10 +39,12 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
     });
 
     useEffect(() => {
-        if (user) {
-            form.reset({ name: user.name, 'can-edit': user['can-edit'] });
-        } else {
-            form.reset({ name: '', 'can-edit': false });
+        if (isOpen) {
+            if (user) {
+                form.reset({ name: user.name, 'can-edit': user['can-edit'] });
+            } else {
+                form.reset({ name: '', 'can-edit': false });
+            }
         }
     }, [user, form, isOpen]);
 
@@ -61,7 +64,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                 toast({
                     variant: 'destructive',
                     title: 'Error',
-                    description: result.error?.form?.[0] || 'There was a problem saving the user.',
+                    description: result.error?.name?.[0] || result.error?.form?.[0] || 'There was a problem saving the user.',
                 });
             }
         });
@@ -106,6 +109,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={field.onChange}
+                                            disabled={user?.name === 'Admin'}
                                         />
                                     </FormControl>
                                 </FormItem>
@@ -113,7 +117,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                         />
                         <DialogFooter>
                             <Button type="button" variant="ghost" onClick={() => onClose(false)}>Cancel</Button>
-                            <Button type="submit" disabled={isPending}>
+                            <Button type="submit" disabled={isPending || user?.name === 'Admin'}>
                                 {isPending ? 'Saving...' : 'Save User'}
                             </Button>
                         </DialogFooter>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useContext, useEffect, useState } from 'react';
@@ -14,7 +15,7 @@ import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminDashboardPage() {
-    const { currentUser, users, deleteUser, refreshUsers } = useContext(UserContext);
+    const { currentUser, users, loading, deleteUser, refreshUsers } = useContext(UserContext);
     const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -23,10 +24,13 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         setIsMounted(true);
-        if (currentUser && currentUser.name !== 'Admin') {
+    }, []);
+
+    useEffect(() => {
+        if (isMounted && !loading && currentUser?.name !== 'Admin') {
             router.push('/');
         }
-    }, [currentUser, router]);
+    }, [currentUser, router, isMounted, loading]);
 
     const handleAddUser = () => {
         setEditingUser(null);
@@ -54,7 +58,7 @@ export default function AdminDashboardPage() {
         }
     }
 
-    if (!isMounted || !currentUser) {
+    if (!isMounted || loading || !currentUser) {
         return (
              <div className="flex justify-center min-h-screen">
                 <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -122,11 +126,11 @@ export default function AdminDashboardPage() {
                                 {users.map(user => (
                                     <TableRow key={user.id}>
                                         <TableCell className="font-medium">{user.name}</TableCell>
-                                        <TableCell className="flex items-center">
+                                        <TableCell>
                                             {user['can-edit'] ? <Check className="text-green-500" /> : <div className="w-4 h-4" />}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)} disabled={user.name === 'Admin' && currentUser.id !== user.id}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)} disabled={user.name === 'Admin'}>
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">Edit</span>
                                             </Button>

@@ -119,7 +119,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
             )}
         >
             <Card className="w-full overflow-hidden">
-                {isEditing && canEdit ? (
+                {isEditing ? (
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <CardHeader>

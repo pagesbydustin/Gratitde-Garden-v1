@@ -12,18 +12,23 @@ import path from 'path';
 const entriesFilePath = path.join(process.cwd(), 'src', 'lib', 'entries.json');
 const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
 
+// Helper to ensure a file exists, creating it if it doesn't.
+async function ensureFile(filePath: string, defaultContent: string) {
+    try {
+        await fs.access(filePath);
+    } catch {
+        await fs.writeFile(filePath, defaultContent, 'utf-8');
+    }
+}
+
 /**
  * Reads all entries from the JSON file.
  * @returns A promise that resolves to an array of journal entries.
  */
 async function readEntries(): Promise<JournalEntry[]> {
-    try {
-        const data = await fs.readFile(entriesFilePath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        // If the file doesn't exist or is empty, return an empty array
-        return [];
-    }
+    await ensureFile(entriesFilePath, '[]');
+    const data = await fs.readFile(entriesFilePath, 'utf-8');
+    return JSON.parse(data);
 }
 
 /**
@@ -39,14 +44,9 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
  * @returns A promise that resolves to an array of users.
  */
 async function readUsers(): Promise<User[]> {
-    try {
-        const data = await fs.readFile(usersFilePath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        // If the file doesn't exist, create it with initial data
-        await writeUsers(initialUsersData);
-        return initialUsersData as User[];
-    }
+    await ensureFile(usersFilePath, JSON.stringify(initialUsersData, null, 2));
+    const data = await fs.readFile(usersFilePath, 'utf-8');
+    return JSON.parse(data);
 }
 
 /**
@@ -166,6 +166,10 @@ export async function addUser(data: { name: string; 'can-edit': boolean }) {
     }
 
     const users = await readUsers();
+    if (parsedData.data.name.toLowerCase() === 'admin') {
+      return { success: false, error: { name: ['"Admin" is a reserved name.'] } };
+    }
+    
     const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
 
     const newUser: User = {
@@ -176,7 +180,7 @@ export async function addUser(data: { name: string; 'can-edit': boolean }) {
     users.push(newUser);
     await writeUsers(users);
 
-    revalidatePath('/admin');
+    revalidatePath('/admin/dashboard');
     return { success: true, user: newUser };
 }
 
@@ -205,16 +209,17 @@ export async function updateUser(data: { id: number, name: string; 'can-edit': b
         return { success: false, error: { form: ['User not found.'] } };
     }
     
-    if (users[userIndex].name === 'Admin' && values.name !== 'Admin') {
-        return { success: false, error: { form: ['Cannot rename the Admin user.'] } };
+    const userToUpdate = users[userIndex];
+    if (userToUpdate.name === 'Admin' && values.name !== 'Admin') {
+        return { success: false, error: { name: ['Cannot rename the Admin user.'] } };
     }
 
-    const updatedUser = { ...users[userIndex], ...values };
+    const updatedUser = { ...userToUpdate, ...values };
     users[userIndex] = updatedUser;
 
     await writeUsers(users);
 
-    revalidatePath('/admin');
+    revalidatePath('/admin/dashboard');
     return { success: true, user: updatedUser };
 }
 
@@ -237,7 +242,15 @@ export async function deleteUser(userId: number) {
 
     const updatedUsers = users.filter(u => u.id !== userId);
     await writeUsers(updatedUsers);
+    
+    // Also delete associated entries
+    const allEntries = await readEntries();
+    const updatedEntries = allEntries.filter(entry => entry.userId !== userId);
+    await writeEntries(updatedEntries);
 
-    revalidatePath('/admin');
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/');
+    revalidatePath('/overview');
+    revalidatePath('/archive');
     return { success: true };
 }
