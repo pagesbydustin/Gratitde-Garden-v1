@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,8 +14,8 @@ type AdminPasscodeDialogProps = {
     onSuccess: () => void;
 };
 
-// In a real app, this would be a secure check against a backend or environment variable
-const ADMIN_PASSCODE = 'admin123';
+// In a real app, this should be a secure check against a backend or environment variable
+const ADMIN_PASSCODE = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || 'admin123';
 
 export function AdminPasscodeDialog({ isOpen, onClose, onSuccess }: AdminPasscodeDialogProps) {
     const [passcode, setPasscode] = useState('');
