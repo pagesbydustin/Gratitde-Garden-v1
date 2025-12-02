@@ -17,7 +17,7 @@ export function AdminPortal() {
 
                 <div className="grid md:grid-cols-2 gap-8 flex-grow">
                     <Card className="flex flex-col">
-                        <CardHeader>
+                        <CardHeader className="flex-grow">
                             <CardTitle className="flex items-center gap-2">
                                 <Users className="h-6 w-6 text-primary" />
                                 User Management
@@ -26,7 +26,7 @@ export function AdminPortal() {
                                 Add, edit, or remove user profiles and manage their permissions.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow flex items-end">
+                        <CardContent>
                             <Button asChild className="w-full">
                                 <Link href="/admin/dashboard">
                                     Go to Dashboard
@@ -36,7 +36,7 @@ export function AdminPortal() {
                         </CardContent>
                     </Card>
                     <Card className="flex flex-col">
-                        <CardHeader>
+                        <CardHeader className="flex-grow">
                             <CardTitle className="flex items-center gap-2">
                                 <BarChart2 className="h-6 w-6 text-primary" />
                                 Application Stats
@@ -45,7 +45,7 @@ export function AdminPortal() {
                                 View aggregated mood data and trends across all users.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow flex items-end">
+                        <CardContent>
                             <Button asChild className="w-full">
                                 <Link href="/admin/overview">
                                     View Stats Overview
