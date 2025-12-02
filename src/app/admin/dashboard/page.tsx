@@ -49,16 +49,19 @@ export default function AdminDashboardPage() {
     }, []);
     
     useEffect(() => {
+        if (isMounted && !loading) {
+            if (currentUser?.name !== 'Admin') {
+                router.push('/');
+            }
+        }
+    }, [currentUser, router, isMounted, loading]);
+
+    useEffect(() => {
         if (settings) {
             settingsForm.reset(settings);
         }
     }, [settings, settingsForm]);
-
-    useEffect(() => {
-        if (isMounted && !loading && currentUser?.name !== 'Admin') {
-            router.push('/');
-        }
-    }, [currentUser, router, isMounted, loading]);
+    
 
     const handleAddUser = () => {
         setEditingUser(null);
