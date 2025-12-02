@@ -75,14 +75,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (fetchedUsers.length > 0) {
             // Try to load from localStorage first
             const storedUserId = localStorage.getItem('currentUser');
-            const user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : null;
+            let user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : null;
             
-            // Set current user, falling back to the first user if none is stored/found
-            if (user) {
-              setCurrentUser(user);
-            } else if (fetchedUsers.length > 0) {
-              setCurrentUser(fetchedUsers[0]);
+            // If no user is in localStorage, default to Admin
+            if (!user) {
+                user = fetchedUsers.find(u => u.name === 'Admin') || null;
             }
+            
+            // Fallback to the first user if Admin is not found
+            if (!user && fetchedUsers.length > 0) {
+                user = fetchedUsers[0];
+            }
+
+            setCurrentUser(user);
         }
     });
   }, [fetchUsers]);
@@ -91,13 +96,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (currentUser) {
       setLoading(true);
-      localStorage.setItem('currentUser', currentUser.id.toString());
+      // Persist current user to localStorage, but only in the browser
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('currentUser', currentUser.id.toString());
+      }
       fetchEntries(currentUser.id).then((userEntries) => {
         setEntries(userEntries);
         setLoading(false);
       });
     } else {
-      localStorage.removeItem('currentUser');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('currentUser');
+      }
       setEntries([]);
       setLoading(false);
     }

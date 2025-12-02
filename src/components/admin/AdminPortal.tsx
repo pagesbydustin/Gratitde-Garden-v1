@@ -9,13 +9,13 @@ import { Users, BarChart2, ArrowRight } from 'lucide-react';
 export function AdminPortal() {
     return (
         <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
-            <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
-                <header className="text-center space-y-2">
+            <main className="w-full max-w-4xl px-4 py-8 md:py-12 flex flex-col">
+                <header className="text-center space-y-2 mb-12">
                     <h1 className="text-4xl font-headline font-bold text-primary">Admin Portal</h1>
                     <p className="text-muted-foreground">Welcome, Admin. Select an option below to manage the application.</p>
                 </header>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-8 flex-grow">
                     <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
