@@ -91,11 +91,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (currentUser) {
       setLoading(true);
+      localStorage.setItem('currentUser', currentUser.id.toString());
       fetchEntries(currentUser.id).then((userEntries) => {
         setEntries(userEntries);
         setLoading(false);
       });
     } else {
+      localStorage.removeItem('currentUser');
       setEntries([]);
       setLoading(false);
     }
@@ -103,11 +105,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const handleSetCurrentUser = (user: User | null) => {
     setCurrentUser(user);
-    if (user) {
-        localStorage.setItem('currentUser', user.id.toString());
-    } else {
-        localStorage.removeItem('currentUser');
-    }
   }
 
   const addEntry = useCallback(async (data: { text: string; moodScore: number; }) => {
