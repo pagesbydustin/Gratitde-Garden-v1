@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -74,8 +75,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (fetchedUsers.length > 0) {
             // Try to load from localStorage first
             const storedUserId = localStorage.getItem('currentUser');
-            const user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : fetchedUsers[0];
-            setCurrentUser(user || fetchedUsers[0]);
+            const user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : null;
+            
+            // Set current user, falling back to the first user if none is stored/found
+            if (user) {
+              setCurrentUser(user);
+            } else if (fetchedUsers.length > 0) {
+              setCurrentUser(fetchedUsers[0]);
+            }
         }
     });
   }, [fetchUsers]);
@@ -108,7 +115,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     
     const result = await apiAddEntry({ ...data, userId: currentUser.id });
     if (result.success) {
-      setEntries(prevEntries => [result.entry, ...prevEntries]);
+      setEntries(prevEntries => [result.entry, ...prevEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
     return result;
   }, [currentUser]);
@@ -148,10 +155,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const deleteUser = useCallback(async (userId: number) => {
     const result = await apiDeleteUser(userId);
     if (result.success) {
-      await fetchUsers();
-      // If the deleted user was the current user, clear it
+      const remainingUsers = await fetchUsers();
+      // If the deleted user was the current user, clear it or set to first available
       if (currentUser && currentUser.id === userId) {
-        handleSetCurrentUser(null);
+        handleSetCurrentUser(remainingUsers.length > 0 ? remainingUsers[0] : null);
       }
     }
     return result;

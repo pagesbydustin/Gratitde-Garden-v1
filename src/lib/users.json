@@ -13,5 +13,10 @@
     "id": 2,
     "name": "J.R.",
     "can-edit": true
+  },
+  {
+    "id": 4,
+    "name": "D.P.",
+    "can-edit": true
   }
 ]
