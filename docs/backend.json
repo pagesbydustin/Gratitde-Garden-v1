@@ -6,19 +6,24 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "number",
-          "description": "A unique identifier for the user."
+          "type": "string",
+          "description": "A unique identifier for the user, typically the Firestore document ID."
         },
         "name": {
           "type": "string",
-          "description": "The name of the user."
+          "description": "The display name of the user."
         },
-        "can-edit": {
-          "type": "boolean",
-          "description": "A flag indicating whether the user has permission to edit entries."
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
         }
       },
-      "required": ["id", "name", "can-edit"]
+      "required": [
+        "id",
+        "name",
+        "email"
+      ]
     },
     "JournalEntry": {
       "title": "Journal Entry",
@@ -27,7 +32,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "A unique identifier for the entry."
+          "description": "A unique identifier for the entry, typically the Firestore document ID."
         },
         "date": {
           "type": "string",
@@ -47,14 +52,22 @@
           "description": "An optional prompt that inspired the entry."
         },
         "userId": {
-          "type": "number",
-          "description": "The ID of the user who created the entry."
+          "type": "string",
+          "description": "The ID of the user who created the entry, linking to a User document."
         }
       },
-      "required": ["id", "date", "moodScore", "text", "userId"]
+      "required": [
+        "id",
+        "date",
+        "moodScore",
+        "text",
+        "userId"
+      ]
     }
   },
   "auth": {
-    "providers": ["anonymous"]
+    "providers": [
+      "anonymous"
+    ]
   }
 }
