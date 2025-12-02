@@ -33,6 +33,12 @@ export function AdminPasscodeDialog({ isOpen, onClose, onSuccess }: AdminPasscod
         }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleSubmit();
+        }
+    };
+
     const handleClose = () => {
         setError('');
         setPasscode('');
@@ -58,6 +64,7 @@ export function AdminPasscodeDialog({ isOpen, onClose, onSuccess }: AdminPasscod
                             type="password"
                             value={passcode}
                             onChange={(e) => setPasscode(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             className="col-span-3"
                         />
                     </div>
