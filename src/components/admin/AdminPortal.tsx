@@ -23,7 +23,7 @@ export function AdminPortal() {
                                 User Management
                             </CardTitle>
                             <CardDescription>
-                                Add, edit, or remove user profiles and manage their permissions.
+                                Access the main dashboard to add new user profiles, edit existing user details and permissions, or permanently remove users from the application. This is also where you can manage global application settings like the daily prompt.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -42,7 +42,7 @@ export function AdminPortal() {
                                 Application Stats
                             </CardTitle>
                             <CardDescription>
-                                View aggregated mood data and trends across all users.
+                                Get a high-level overview of application usage. This section provides aggregated mood charts and other statistics from all non-admin users to help you understand overall trends and well-being. User data is anonymized.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
