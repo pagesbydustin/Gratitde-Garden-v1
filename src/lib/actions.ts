@@ -5,29 +5,15 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { JournalEntry, User } from '@/lib/types';
 import initialUsersData from './users.json';
+import initialEntriesData from './entries.json';
 import fs from 'fs/promises';
 import path from 'path';
 
 // Define the paths to the JSON files
 const entriesFilePath = path.join(process.cwd(), 'src', 'lib', 'entries.json');
-const usersFilePath = path.join(process.cwd(), 'src-dont-exist', 'lib', 'users.json');
+const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
 const settingsFilePath = path.join(process.cwd(), 'src', 'lib', 'settings.json');
 
-
-// Helper to ensure a file exists, creating it if it doesn't.
-async function ensureFile(filePath: string, defaultContent: string) {
-    try {
-        await fs.access(filePath);
-    } catch {
-        // In a read-only environment (like production), this will fail.
-        // We'll handle this gracefully in the read functions.
-        try {
-            await fs.writeFile(filePath, defaultContent, 'utf-8');
-        } catch (writeError) {
-            console.warn(`Could not write file ${filePath}. This is expected in a read-only environment.`);
-        }
-    }
-}
 
 /**
  * Reads all entries from the JSON file.
@@ -38,8 +24,8 @@ async function readEntries(): Promise<JournalEntry[]> {
         const data = await fs.readFile(entriesFilePath, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
-        console.warn(`Could not read ${entriesFilePath}. Returning empty array. This is expected on first run or in a read-only environment.`);
-        return [];
+        console.warn(`Could not read ${entriesFilePath}. Returning initial entry data. This is expected on first run or in a read-only environment.`);
+        return initialEntriesData as JournalEntry[];
     }
 }
 
@@ -48,7 +34,11 @@ async function readEntries(): Promise<JournalEntry[]> {
  * @param entries - The array of journal entries to write.
  */
 async function writeEntries(entries: JournalEntry[]): Promise<void> {
-    await fs.writeFile(entriesFilePath, JSON.stringify(entries, null, 2), 'utf-8');
+    try {
+        await fs.writeFile(entriesFilePath, JSON.stringify(entries, null, 2), 'utf-8');
+    } catch (writeError) {
+        console.warn(`Could not write to ${entriesFilePath}. This is expected in a read-only production environment.`);
+    }
 }
 
 /**
@@ -70,7 +60,11 @@ async function readUsers(): Promise<User[]> {
  * @param users - The array of users to write.
  */
 async function writeUsers(users: User[]): Promise<void> {
-    await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+    try {
+        await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+    } catch (writeError) {
+        console.warn(`Could not write to ${usersFilePath}. This is expected in a read-only production environment.`);
+    }
 }
 
 const defaultSettings = {
@@ -89,7 +83,11 @@ async function readSettings() {
 }
 
 async function writeSettings(settings: any) {
-    await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2), 'utf-8');
+    try {
+        await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2), 'utf-8');
+    } catch (writeError) {
+        console.warn(`Could not write to ${settingsFilePath}. This is expected in a read-only production environment.`);
+    }
 }
 
 export async function getSettings() {
