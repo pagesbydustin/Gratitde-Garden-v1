@@ -31,7 +31,7 @@ A digital journaling application designed to help users cultivate joy and reflec
 
 ## 4. Data Models
 
-The application uses two primary data models, defined in `docs/backend.json`.
+The application uses two primary data models, as defined in `docs/backend.json`.
 
 ### User
 
