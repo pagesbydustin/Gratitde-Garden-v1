@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { UserProvider } from '@/context/UserContext';
+import { SettingsProvider } from '@/context/SettingsContext';
 
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' });
 
@@ -29,11 +30,13 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased', lora.variable)}>
-        <UserProvider>
-            <GlobalHeader />
-            {children}
-            <Toaster />
-        </UserProvider>
+        <SettingsProvider>
+            <UserProvider>
+                <GlobalHeader />
+                {children}
+                <Toaster />
+            </UserProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

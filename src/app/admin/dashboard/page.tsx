@@ -1,30 +1,58 @@
 
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { UserContext } from '@/context/UserContext';
+import { SettingsContext, type Settings } from '@/context/SettingsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Pencil, Trash, UserPlus, Check, ShieldAlert } from 'lucide-react';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Pencil, Trash, UserPlus, Check, ShieldAlert, Save } from 'lucide-react';
 import { UserFormDialog } from '@/components/admin/UserFormDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const settingsFormSchema = z.object({
+    gratitudePrompt: z.string().min(5, 'Prompt must be at least 5 characters.'),
+    showExplanation: z.boolean(),
+});
+
 export default function AdminDashboardPage() {
     const { currentUser, users, loading, deleteUser, refreshUsers } = useContext(UserContext);
+    const { settings, updateSettings } = useContext(SettingsContext);
     const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [isSettingsPending, startSettingsTransition] = useTransition();
     const { toast } = useToast();
+
+    const settingsForm = useForm<z.infer<typeof settingsFormSchema>>({
+        resolver: zodResolver(settingsFormSchema),
+        defaultValues: {
+            gratitudePrompt: '',
+            showExplanation: true,
+        },
+    });
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+    
+    useEffect(() => {
+        if (settings) {
+            settingsForm.reset(settings);
+        }
+    }, [settings, settingsForm]);
 
     useEffect(() => {
         if (isMounted && !loading && currentUser?.name !== 'Admin') {
@@ -56,6 +84,24 @@ export default function AdminDashboardPage() {
         if (wasSaved) {
             refreshUsers();
         }
+    }
+
+    const onSettingsSubmit = (values: z.infer<typeof settingsFormSchema>) => {
+        startSettingsTransition(async () => {
+            const result = await updateSettings(values as Settings);
+            if (result.success) {
+                toast({
+                    title: 'Settings Saved',
+                    description: 'The application settings have been updated.',
+                });
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'Error',
+                    description: 'There was a problem saving the settings.',
+                });
+            }
+        });
     }
 
     if (!isMounted || loading || !currentUser) {
@@ -101,6 +147,61 @@ export default function AdminDashboardPage() {
                     <h1 className="text-4xl font-headline font-bold text-primary">Admin Dashboard</h1>
                     <p className="text-muted-foreground">Manage user profiles and application settings.</p>
                 </header>
+
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Application Settings</CardTitle>
+                        <CardDescription>Manage global settings for the application.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Form {...settingsForm}>
+                            <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
+                                <FormField
+                                    control={settingsForm.control}
+                                    name="gratitudePrompt"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Gratitude Prompt</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="What are you grateful for?" {...field} />
+                                            </FormControl>
+                                            <FormDescription>
+                                                The prompt displayed on the new entry form.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={settingsForm.control}
+                                    name="showExplanation"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                            <div className="space-y-0.5">
+                                                <FormLabel>Show "How To" Guide</FormLabel>
+                                                <FormDescription>
+                                                    Display the "How to Get Started" section on the homepage.
+                                                </FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Switch
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className="flex justify-end">
+                                    <Button type="submit" disabled={isSettingsPending}>
+                                        <Save className="mr-2 h-4 w-4" />
+                                        {isSettingsPending ? 'Saving...' : 'Save Settings'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </Form>
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">

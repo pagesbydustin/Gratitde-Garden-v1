@@ -7,6 +7,7 @@ import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
 import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
 import { UserContext } from '@/context/UserContext';
+import { SettingsContext } from '@/context/SettingsContext';
 import { type JournalEntry } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,14 @@ import { Button } from '@/components/ui/button';
  * It displays the header, a form for new entries, and a list of this week's entries.
  */
 export default function Home() {
+  const { settings } = useContext(SettingsContext);
   const [showExplanation, setShowExplanation] = useState(true);
+
+  useEffect(() => {
+    if (settings) {
+      setShowExplanation(settings.showExplanation);
+    }
+  }, [settings]);
 
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">

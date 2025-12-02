@@ -11,6 +11,8 @@ import path from 'path';
 // Define the paths to the JSON files
 const entriesFilePath = path.join(process.cwd(), 'src', 'lib', 'entries.json');
 const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
+const settingsFilePath = path.join(process.cwd(), 'src', 'lib', 'settings.json');
+
 
 // Helper to ensure a file exists, creating it if it doesn't.
 async function ensureFile(filePath: string, defaultContent: string) {
@@ -55,6 +57,45 @@ async function readUsers(): Promise<User[]> {
  */
 async function writeUsers(users: User[]): Promise<void> {
     await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+}
+
+const defaultSettings = {
+  gratitudePrompt: "What are you grateful for?",
+  showExplanation: true,
+};
+
+async function readSettings() {
+    await ensureFile(settingsFilePath, JSON.stringify(defaultSettings, null, 2));
+    const data = await fs.readFile(settingsFilePath, 'utf-8');
+    return JSON.parse(data);
+}
+
+async function writeSettings(settings: any) {
+    await fs.writeFile(settingsFilePath, JSON.stringify(settings, null, 2), 'utf-8');
+}
+
+export async function getSettings() {
+    return await readSettings();
+}
+
+const settingsSchema = z.object({
+    gratitudePrompt: z.string().min(5, 'Prompt must be at least 5 characters.'),
+    showExplanation: z.boolean(),
+});
+
+
+export async function updateSettings(data: { gratitudePrompt: string, showExplanation: boolean }) {
+    const parsedData = settingsSchema.safeParse(data);
+
+    if (!parsedData.success) {
+        return { success: false, error: parsedData.error.flatten().fieldErrors };
+    }
+
+    await writeSettings(parsedData.data);
+    
+    revalidatePath('/');
+    revalidatePath('/admin/dashboard');
+    return { success: true, settings: parsedData.data };
 }
 
 

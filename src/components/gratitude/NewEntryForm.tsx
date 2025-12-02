@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { MoodSelector } from './MoodSelector';
 import { UserContext } from '@/context/UserContext';
+import { SettingsContext } from '@/context/SettingsContext';
 
 const formSchema = z.object({
   moodScore: z.number().min(1).max(5).default(3),
@@ -52,6 +53,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { currentUser, addEntry } = useContext(UserContext);
+  const { settings, loading: settingsLoading } = useContext(SettingsContext);
   const [currentDate, setCurrentDate] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -203,7 +205,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
                         render={({ field }) => (
                             <FormItem>
                             <div className="flex justify-between items-center">
-                                <FormLabel className="text-lg">What are you grateful for?</FormLabel>
+                                <FormLabel className="text-lg">{settingsLoading ? '...' : settings?.gratitudePrompt}</FormLabel>
                                 <Button
                                     type="button"
                                     variant="ghost"
