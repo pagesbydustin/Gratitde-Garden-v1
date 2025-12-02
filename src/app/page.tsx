@@ -13,14 +13,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Notebook, BarChart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AdminPortal } from '@/components/admin/AdminPortal';
 
 
 /**
  * The main page of the application.
  * It displays the header, a form for new entries, and a list of this week's entries.
+ * For Admins, it shows a dedicated admin portal.
  */
 export default function Home() {
   const { settings } = useContext(SettingsContext);
+  const { currentUser, loading: userLoading } = useContext(UserContext);
   const [showExplanation, setShowExplanation] = useState(true);
 
   useEffect(() => {
@@ -28,6 +31,14 @@ export default function Home() {
       setShowExplanation(settings.showExplanation);
     }
   }, [settings]);
+
+  if (userLoading) {
+    return <LoadingState />;
+  }
+
+  if (currentUser?.name === 'Admin') {
+    return <AdminPortal />;
+  }
 
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
@@ -96,6 +107,20 @@ export default function Home() {
       </main>
     </div>
   );
+}
+
+function LoadingState() {
+    return (
+        <div className="flex justify-center min-h-screen">
+          <main className="w-full max-w-2xl px-4 py-8 md:py-12 space-y-12">
+            <Skeleton className="h-24 w-24 mx-auto rounded-full" />
+            <Skeleton className="h-10 w-3/4 mx-auto" />
+            <Skeleton className="h-5 w-1/2 mx-auto" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </main>
+        </div>
+    );
 }
 
 /**
