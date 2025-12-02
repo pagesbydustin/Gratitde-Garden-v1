@@ -10,7 +10,7 @@ import path from 'path';
 
 // Define the paths to the JSON files
 const entriesFilePath = path.join(process.cwd(), 'src', 'lib', 'entries.json');
-const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
+const usersFilePath = path.join(process.cwd(), 'src-dont-exist', 'lib', 'users.json');
 const settingsFilePath = path.join(process.cwd(), 'src', 'lib', 'settings.json');
 
 
@@ -19,7 +19,13 @@ async function ensureFile(filePath: string, defaultContent: string) {
     try {
         await fs.access(filePath);
     } catch {
-        await fs.writeFile(filePath, defaultContent, 'utf-8');
+        // In a read-only environment (like production), this will fail.
+        // We'll handle this gracefully in the read functions.
+        try {
+            await fs.writeFile(filePath, defaultContent, 'utf-8');
+        } catch (writeError) {
+            console.warn(`Could not write file ${filePath}. This is expected in a read-only environment.`);
+        }
     }
 }
 
@@ -28,9 +34,13 @@ async function ensureFile(filePath: string, defaultContent: string) {
  * @returns A promise that resolves to an array of journal entries.
  */
 async function readEntries(): Promise<JournalEntry[]> {
-    await ensureFile(entriesFilePath, '[]');
-    const data = await fs.readFile(entriesFilePath, 'utf-8');
-    return JSON.parse(data);
+    try {
+        const data = await fs.readFile(entriesFilePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.warn(`Could not read ${entriesFilePath}. Returning empty array. This is expected on first run or in a read-only environment.`);
+        return [];
+    }
 }
 
 /**
@@ -46,9 +56,13 @@ async function writeEntries(entries: JournalEntry[]): Promise<void> {
  * @returns A promise that resolves to an array of users.
  */
 async function readUsers(): Promise<User[]> {
-    await ensureFile(usersFilePath, JSON.stringify(initialUsersData, null, 2));
-    const data = await fs.readFile(usersFilePath, 'utf-8');
-    return JSON.parse(data);
+     try {
+        const data = await fs.readFile(usersFilePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.warn(`Could not read ${usersFilePath}. Returning initial user data. This is expected on first run or in a read-only environment.`);
+        return initialUsersData;
+    }
 }
 
 /**
@@ -65,9 +79,13 @@ const defaultSettings = {
 };
 
 async function readSettings() {
-    await ensureFile(settingsFilePath, JSON.stringify(defaultSettings, null, 2));
-    const data = await fs.readFile(settingsFilePath, 'utf-8');
-    return JSON.parse(data);
+    try {
+        const data = await fs.readFile(settingsFilePath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.warn(`Could not read ${settingsFilePath}. Returning default settings. This is expected on first run or in a read-only environment.`);
+        return defaultSettings;
+    }
 }
 
 async function writeSettings(settings: any) {
