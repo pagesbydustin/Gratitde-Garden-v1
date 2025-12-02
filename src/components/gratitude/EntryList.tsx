@@ -1,3 +1,5 @@
+'use client';
+
 import { type JournalEntry } from '@/lib/types';
 import { EntryCard } from './EntryCard';
 import { Skeleton } from '../ui/skeleton';
