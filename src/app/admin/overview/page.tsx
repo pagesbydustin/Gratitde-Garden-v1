@@ -12,7 +12,7 @@ import { ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
-const moodMap = {
+const moodMap: Record<number, { label: string }> = {
   1: { label: 'Awful' },
   2: { label: 'Okay' },
   3: { label: 'Good' },
@@ -21,30 +21,46 @@ const moodMap = {
 };
 
 /**
- * Processes journal entries to count mood occurrences for the current year.
+ * Processes journal entries to count mood occurrences for the current year,
+ * broken down by user.
  * @param entries - An array of journal entries.
- * @returns An array of objects formatted for the mood chart, with each object containing a mood name and its count.
+ * @param users - An array of all users.
+ * @returns An object containing `chartData` for the mood chart and `userKeys` for the legend.
  */
-function processMoodData(entries: JournalEntry[]) {
+function processMoodData(entries: JournalEntry[], users: User[]) {
   const currentYear = new Date().getFullYear();
   
-  const moodCounts = entries
+  const moodData = Object.entries(moodMap).reduce((acc, [score, { label }]) => {
+    acc[label] = { name: label };
+    return acc;
+  }, {} as Record<string, { name: string; [key: string]: any }>);
+  
+  const userKeys: { id: number; name: string }[] = [];
+
+  entries
     .filter(entry => new Date(entry.date).getFullYear() === currentYear)
-    .reduce((acc, entry) => {
-      const mood = entry.moodScore;
-      acc[mood] = (acc[mood] || 0) + 1;
-      return acc;
-    }, {} as Record<number, number>);
+    .forEach(entry => {
+      const moodLabel = moodMap[entry.moodScore]?.label;
+      const user = users.find(u => u.id === entry.userId);
 
-  const chartData = Object.entries(moodMap)
-    .map(([score, { label }]) => ({
-      name: label,
-      count: moodCounts[parseInt(score, 10)] || 0,
-    }))
-    .reverse(); // Reverse to show Awesome at the top
+      if (moodLabel && user) {
+        if (!moodData[moodLabel][user.name]) {
+          moodData[moodLabel][user.name] = 0;
+        }
+        moodData[moodLabel][user.name]++;
+        
+        if (!userKeys.some(u => u.id === user.id)) {
+            userKeys.push({ id: user.id, name: user.name });
+        }
+      }
+    });
 
-  return chartData;
+  return {
+    chartData: Object.values(moodData).reverse(), // Reverse to show Awesome at the top
+    userKeys: userKeys,
+  };
 }
+
 
 /**
  * Renders the admin overview page, which displays a chart summarizing all non-admin user moods.
@@ -70,15 +86,16 @@ export default function AdminOverviewPage() {
     
       Promise.all([getAllEntries(), getUsers()]).then(([entries, users]) => {
         const adminUser = users.find(u => u.name === 'Admin');
+        const nonAdminUsers = users.filter(u => u.name !== 'Admin');
         const nonAdminEntries = entries.filter(e => e.userId !== adminUser?.id);
         setAllEntries(nonAdminEntries);
-        setAllUsers(users);
+        setAllUsers(nonAdminUsers);
         setLoading(false);
       });
     }
   }, [currentUser, userLoading, router, isMounted]);
 
-  const moodData = processMoodData(allEntries);
+  const { chartData, userKeys } = processMoodData(allEntries, allUsers);
   const hasEntries = allEntries.length > 0;
 
   if (!isMounted || loading || userLoading) {
@@ -137,7 +154,7 @@ export default function AdminOverviewPage() {
             </CardHeader>
             <CardContent className="p-4 md:p-6">
               {hasEntries ? (
-                <MoodsChart data={moodData} />
+                <MoodsChart data={chartData} userKeys={userKeys} />
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
                   <p className="text-muted-foreground">Not enough data to create an analysis.</p>
