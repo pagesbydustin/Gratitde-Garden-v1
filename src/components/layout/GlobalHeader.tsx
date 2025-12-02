@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useContext } from 'react';
@@ -24,6 +25,7 @@ export function GlobalHeader() {
   
   const adminLinks = [
     { href: '/admin/dashboard', label: 'Dashboard' },
+    { href: '/admin/overview', label: 'Stats Overview' },
   ];
 
   const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => (

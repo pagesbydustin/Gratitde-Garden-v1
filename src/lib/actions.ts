@@ -124,6 +124,16 @@ export async function getUsers(): Promise<User[]> {
 }
 
 /**
+ * Fetches all journal entries.
+ * @returns A promise that resolves to an array of all journal entries.
+ */
+export async function getAllEntries(): Promise<JournalEntry[]> {
+  const allEntries = await readEntries();
+  return allEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+
+/**
  * Fetches all journal entries for a specific user, sorted by date in descending order.
  * @param userId - The ID of the user whose entries are to be fetched.
  * @returns A promise that resolves to an array of the user's journal entries.
