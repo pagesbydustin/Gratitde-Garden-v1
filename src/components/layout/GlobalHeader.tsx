@@ -39,6 +39,9 @@ export function GlobalHeader() {
       <Link href={href}>{label}</Link>
     </Button>
   );
+  
+  const isAdmin = currentUser?.name === 'Admin';
+  const linksToShow = isAdmin ? adminLinks : navLinks.filter(link => link.href !== '/');
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,10 +58,8 @@ export function GlobalHeader() {
         <div className="flex items-center gap-2">
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
-                {navLinks.map((link) => (
-                    <NavLink key={link.href} href={link.href} label={link.label} />
-                ))}
-                {currentUser?.name === 'Admin' && adminLinks.map((link) => (
+                <NavLink href="/" label="Home" />
+                {linksToShow.map((link) => (
                     <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
                 <UserSelection />
@@ -66,28 +67,26 @@ export function GlobalHeader() {
 
             {/* Mobile Navigation */}
             <div className="md:hidden flex items-center">
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className='ml-2'>
-                    <Menu className="h-6 w-6" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <SheetHeader>
-                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-4 pt-8">
-                    <UserSelection />
-                    {navLinks.map((link) => (
-                      <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
-                    ))}
-                    {currentUser?.name === 'Admin' && adminLinks.map((link) => (
-                      <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
-                    ))}
-                  </div>
-                </SheetContent>
-              </Sheet>
+                <UserSelection />
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className='ml-2'>
+                            <Menu className="h-6 w-6" />
+                            <span className="sr-only">Open menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right">
+                        <SheetHeader>
+                            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                        </SheetHeader>
+                        <div className="flex flex-col gap-4 pt-8">
+                            <NavLink href="/" label="Home" isMobile />
+                            {linksToShow.map((link) => (
+                                <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
+                            ))}
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </div>
         </div>
       </div>

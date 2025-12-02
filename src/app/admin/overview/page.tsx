@@ -21,44 +21,29 @@ const moodMap: Record<number, { label: string }> = {
 };
 
 /**
- * Processes journal entries to count mood occurrences for the current year,
- * broken down by user.
+ * Processes journal entries to count mood occurrences for the current year.
  * @param entries - An array of journal entries.
- * @param users - An array of all users.
- * @returns An object containing `chartData` for the mood chart and `userKeys` for the legend.
+ * @returns An array of objects formatted for the mood chart, with each object containing a mood name and its count.
  */
-function processMoodData(entries: JournalEntry[], users: User[]) {
+function processMoodData(entries: JournalEntry[]) {
   const currentYear = new Date().getFullYear();
   
-  const moodData = Object.entries(moodMap).reduce((acc, [score, { label }]) => {
-    acc[label] = { name: label };
-    return acc;
-  }, {} as Record<string, { name: string; [key: string]: any }>);
-  
-  const userKeys: { id: number; name: string }[] = [];
-
-  entries
+  const moodCounts = entries
     .filter(entry => new Date(entry.date).getFullYear() === currentYear)
-    .forEach(entry => {
-      const moodLabel = moodMap[entry.moodScore]?.label;
-      const user = users.find(u => u.id === entry.userId);
+    .reduce((acc, entry) => {
+      const mood = entry.moodScore;
+      acc[mood] = (acc[mood] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
 
-      if (moodLabel && user) {
-        if (!moodData[moodLabel][user.name]) {
-          moodData[moodLabel][user.name] = 0;
-        }
-        moodData[moodLabel][user.name]++;
-        
-        if (!userKeys.some(u => u.id === user.id)) {
-            userKeys.push({ id: user.id, name: user.name });
-        }
-      }
-    });
+  const chartData = Object.entries(moodMap)
+    .map(([score, { label }]) => ({
+      name: label,
+      count: moodCounts[parseInt(score, 10)] || 0,
+    }))
+    .reverse(); // Reverse to show Awesome at the top
 
-  return {
-    chartData: Object.values(moodData).reverse(), // Reverse to show Awesome at the top
-    userKeys: userKeys,
-  };
+  return chartData;
 }
 
 
@@ -95,7 +80,7 @@ export default function AdminOverviewPage() {
     }
   }, [currentUser, userLoading, router, isMounted]);
 
-  const { chartData, userKeys } = processMoodData(allEntries, allUsers);
+  const chartData = processMoodData(allEntries);
   const hasEntries = allEntries.length > 0;
 
   if (!isMounted || loading || userLoading) {
@@ -154,7 +139,7 @@ export default function AdminOverviewPage() {
             </CardHeader>
             <CardContent className="p-4 md:p-6">
               {hasEntries ? (
-                <MoodsChart data={chartData} userKeys={userKeys} />
+                <MoodsChart data={chartData} />
               ) : (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
                   <p className="text-muted-foreground">Not enough data to create an analysis.</p>
