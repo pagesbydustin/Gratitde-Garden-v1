@@ -73,21 +73,24 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchUsers().then(fetchedUsers => {
         if (fetchedUsers.length > 0) {
-            // Try to load from localStorage first
             const storedUserId = localStorage.getItem('currentUser');
-            let user = storedUserId ? fetchedUsers.find(u => u.id === parseInt(storedUserId)) : null;
+            let userToSet: User | null = null;
             
-            // If no user is in localStorage, default to Admin
-            if (!user) {
-                user = fetchedUsers.find(u => u.name === 'Admin') || null;
+            if (storedUserId) {
+                const storedUser = fetchedUsers.find(u => u.id === parseInt(storedUserId));
+                // Only auto-login if the stored user is NOT Admin
+                if (storedUser && storedUser.name !== 'Admin') {
+                    userToSet = storedUser;
+                }
             }
             
-            // Fallback to the first user if Admin is not found
-            if (!user && fetchedUsers.length > 0) {
-                user = fetchedUsers[0];
+            // If no user is set yet (either no stored user, or stored user was Admin)
+            if (!userToSet) {
+                // Default to the first non-admin user
+                userToSet = fetchedUsers.find(u => u.name !== 'Admin') || fetchedUsers[0] || null;
             }
 
-            setCurrentUser(user);
+            setCurrentUser(userToSet);
         }
     });
   }, [fetchUsers]);
