@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useContext, useState } from 'react';
@@ -37,16 +38,19 @@ export function UserSelection() {
     }
     setIsPasscodeDialogOpen(false);
   };
+  
+  const adminUser = users.find(u => u.name === 'Admin');
+  const displayUser = currentUser ?? adminUser;
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-[180px] justify-between">
-            {currentUser ? (
+            {displayUser ? (
               <>
                 <UserIcon className="mr-2 h-4 w-4" />
-                {currentUser.name}
+                {displayUser.name}
               </>
             ) : (
               'Select User'

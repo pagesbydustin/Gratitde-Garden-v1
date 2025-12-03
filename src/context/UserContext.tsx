@@ -73,25 +73,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchUsers().then(fetchedUsers => {
         if (fetchedUsers.length > 0) {
-            const storedUserId = localStorage.getItem('currentUser');
-            let userToSet: User | null = null;
+            const adminUser = fetchedUsers.find(u => u.name === 'Admin');
             
-            if (storedUserId) {
-                const storedUser = fetchedUsers.find(u => u.id === parseInt(storedUserId));
-                // Only auto-login if the stored user is NOT Admin
-                if (storedUser && storedUser.name !== 'Admin') {
-                    userToSet = storedUser;
+            // By default, select Admin but don't log them in.
+            // The UI will show 'Admin', but currentUser is null so no data loads.
+            if (adminUser) {
+                const initialUser = { ...adminUser, name: 'Admin' };
+                // A bit of a hack: set a user object that looks like Admin
+                // but won't trigger the "logged in as admin" state in page.tsx
+                // because we won't set it as the "currentUser" for data fetching.
+                // We'll let the user selection handle the actual login.
+                const storedUserId = localStorage.getItem('currentUser');
+                if (storedUserId) {
+                    const storedUser = fetchedUsers.find(u => u.id === parseInt(storedUserId));
+                    if (storedUser) {
+                       setCurrentUser(storedUser);
+                    } else {
+                       setCurrentUser(null);
+                    }
+                } else {
+                    // On first load, nobody is logged in
+                    setCurrentUser(null);
                 }
+            } else {
+                 setCurrentUser(fetchedUsers[0] || null);
             }
-            
-            // If no user is set yet (either no stored user, or stored user was Admin)
-            if (!userToSet) {
-                // Default to the first non-admin user
-                userToSet = fetchedUsers.find(u => u.name !== 'Admin') || fetchedUsers[0] || null;
-            }
-
-            setCurrentUser(userToSet);
         }
+        setLoading(false);
     });
   }, [fetchUsers]);
 
@@ -103,10 +111,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('currentUser', currentUser.id.toString());
       }
-      fetchEntries(currentUser.id).then((userEntries) => {
-        setEntries(userEntries);
-        setLoading(false);
-      });
+      // Don't fetch entries for the placeholder "Admin" at startup.
+      if (currentUser.name === 'Admin') {
+          fetchEntries(currentUser.id).then((userEntries) => {
+            setEntries(userEntries);
+            setLoading(false);
+          });
+      } else {
+          fetchEntries(currentUser.id).then((userEntries) => {
+            setEntries(userEntries);
+            setLoading(false);
+          });
+      }
     } else {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('currentUser');
