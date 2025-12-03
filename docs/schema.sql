@@ -1,32 +1,19 @@
--- This SQL script defines the database schema for the Gratitude Garden application.
--- It is based on the entities defined in `docs/backend.json`.
+-- This schema is for documentation purposes and reflects the structure of the data
+-- stored in the JSON files.
 
--- Users Table
--- Stores user profile information.
+-- Table structure for Users
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id INT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE
+    "can-edit" BOOLEAN NOT NULL
 );
 
--- Journal Entries Table
--- Stores the gratitude entries for each user.
+-- Table structure for Journal Entries
 CREATE TABLE journal_entries (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    mood_score INTEGER NOT NULL CHECK (mood_score >= 1 AND mood_score <= 5),
+    id VARCHAR(36) PRIMARY KEY,
+    "date" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "moodScore" INT NOT NULL,
     text TEXT NOT NULL,
-    prompt VARCHAR(255),
-    user_id INTEGER NOT NULL,
-    
-    -- Foreign key constraint to link entries to a user.
-    -- If a user is deleted, all their entries are also deleted.
-    CONSTRAINT fk_user
-        FOREIGN KEY(user_id) 
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    "userId" INT NOT NULL,
+    FOREIGN KEY ("userId") REFERENCES users(id)
 );
-
--- Indexes for performance
-CREATE INDEX idx_journal_entries_user_id ON journal_entries(user_id);
-CREATE INDEX idx_journal_entries_date ON journal_entries(date);
