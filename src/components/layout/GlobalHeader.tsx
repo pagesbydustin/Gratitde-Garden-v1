@@ -7,16 +7,34 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { GratitudeIcon } from '@/components/icons';
-import { Menu } from 'lucide-react';
+import { Menu, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserContext } from '@/context/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function GlobalHeader() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { currentUser } = useContext(UserContext);
+  const { users, currentUser, setCurrentUser } = useContext(UserContext);
   const { toast } = useToast();
+
+  const handleUserChange = (userId: string) => {
+    const selectedUser = users.find(u => u.id === userId);
+    if (selectedUser) {
+        setCurrentUser(selectedUser);
+        toast({
+            title: `Switched to ${selectedUser.name}`,
+            description: `You are now viewing the journal as ${selectedUser.name}.`,
+        });
+    }
+  };
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -56,7 +74,7 @@ export function GlobalHeader() {
         </div>
         
         {/* Right side: Desktop and Mobile Navigation */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
                 <NavLink href="/" label="Home" />
@@ -64,6 +82,20 @@ export function GlobalHeader() {
                     <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
             </nav>
+            
+            <Select onValueChange={handleUserChange} value={currentUser?.id}>
+              <SelectTrigger className="w-[180px] hidden md:flex">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <SelectValue placeholder="Select a user" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {users.map(user => (
+                  <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* Mobile Navigation */}
             <div className="md:hidden flex items-center">
@@ -79,6 +111,19 @@ export function GlobalHeader() {
                             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                         </SheetHeader>
                         <div className="flex flex-col gap-4 pt-8">
+                             <div className="px-2">
+                                <Select onValueChange={handleUserChange} value={currentUser?.id}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a user" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {users.map(user => (
+                                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <NavLink href="/" label="Home" isMobile />
                             {linksToShow.map((link) => (
                                 <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
