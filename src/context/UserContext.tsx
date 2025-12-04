@@ -22,7 +22,7 @@ type UserContextType = {
   /** Loading state for entries */
   loading: boolean;
   /** Function to update an existing user. */
-  updateUser: (data: { id: string, name: string; 'can-edit': boolean }) => Promise<any>;
+  updateUser: (data: { id: string, name: string; email: string, 'can-edit': boolean }) => Promise<any>;
   /** Function to delete a user. */
   deleteUser: (userId: string) => Promise<any>;
   /** Function to refresh the list of users. */
@@ -41,8 +41,8 @@ export const UserContext = createContext<UserContextType>({
   addEntry: async () => {},
   updateEntry: async () => {},
   loading: true,
-  updateUser: async () => {},
-  deleteUser: async () => {},
+  updateUser: async () => ({ success: false, error: 'Not implemented' }),
+  deleteUser: async () => ({ success: false, error: 'Not implemented' }),
   refreshUsers: async () => {},
   setCurrentUser: () => {},
 });
@@ -56,26 +56,67 @@ export const UserContext = createContext<UserContextType>({
  */
 export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const refreshUsers = useCallback(async () => {
-      setLoading(true);
       const fetchedUsers = await apiGetUsers();
       setUsers(fetchedUsers);
-      if (!currentUser && fetchedUsers.length > 0) {
-        setCurrentUser(fetchedUsers[0]);
+      return fetchedUsers;
+  }, []);
+
+  const setCurrentUser = useCallback((user: User | null) => {
+    try {
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('currentUser');
       }
-      setLoading(false);
-  }, [currentUser]);
+      setCurrentUserState(user);
+    } catch (error) {
+      console.error("Could not access localStorage. User session will not be persisted.", error);
+      setCurrentUserState(user);
+    }
+  }, []);
+
 
   useEffect(() => {
-    refreshUsers();
-  }, []);
+    async function loadInitialData() {
+      setLoading(true);
+      const fetchedUsers = await refreshUsers();
+      
+      try {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          // Verify that the stored user still exists in the fetched users
+          if (fetchedUsers.some(u => u.id === parsedUser.id)) {
+            setCurrentUserState(parsedUser);
+          } else if (fetchedUsers.length > 0) {
+            setCurrentUser(fetchedUsers[0]);
+          }
+        } else if (fetchedUsers.length > 0) {
+          setCurrentUser(fetchedUsers[0]);
+        }
+      } catch (error) {
+          console.error("Could not access localStorage. Defaulting to first user.", error);
+          if(fetchedUsers.length > 0) {
+            setCurrentUserState(fetchedUsers[0]);
+          }
+      } finally {
+        setIsInitialLoad(false);
+      }
+    }
+    loadInitialData();
+  }, [refreshUsers, setCurrentUser]);
+
 
   // Fetch entries when the current user changes
   useEffect(() => {
+    if (isInitialLoad) return;
+    
     if (currentUser?.id) {
       setLoading(true);
       apiGetEntries(currentUser.id).then((userEntries) => {
@@ -86,7 +127,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setEntries([]);
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, isInitialLoad]);
 
   const addEntry = useCallback(async (data: { text: string; moodScore: number; }) => {
     if (!currentUser?.id) return { success: false, error: 'No user selected' };
@@ -119,7 +160,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     entries,
     addEntry,
     updateEntry,
-    loading,
+    loading: loading || isInitialLoad,
     updateUser: apiUpdateUser,
     deleteUser: apiDeleteUser,
     refreshUsers,

@@ -8,11 +8,8 @@ import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getAllEntries } from '@/lib/actions';
-import { ShieldAlert } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { AdminAuth } from '@/components/admin/AdminAuth';
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
 const moodMap: Record<number, { label: string }> = {
   1: { label: 'Awful' },
@@ -48,46 +45,26 @@ function processMoodData(entries: JournalEntry[]) {
   return chartData;
 }
 
-
-/**
- * Renders the admin overview page, which displays a chart summarizing all non-admin user moods.
- */
-export default function AdminOverviewPage() {
-  const { currentUser, loading: userLoading } = useContext(UserContext);
+function Overview() {
+  const { currentUser, users, loading: userLoading } = useContext(UserContext);
   const [allEntries, setAllEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
-  const isAdmin = currentUser?.email === ADMIN_EMAIL;
+  
+  const adminUser = users.find(u => u.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com'));
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted && !userLoading) {
-      if (!isAdmin) {
-        router.push('/');
-        return;
-      }
-    
-      getAllEntries().then((entries) => {
-        // Filter out admin entries
-        const nonAdminEntries = entries.filter(entry => {
-            const entryUser = entry.userId;
-            // Assuming we can get user info or at least check against admin ID
-            return entryUser !== currentUser?.id;
-        });
-        setAllEntries(nonAdminEntries);
-        setLoading(false);
-      });
-    }
-  }, [currentUser, userLoading, router, isMounted, isAdmin]);
+    getAllEntries().then((entries) => {
+      // Filter out admin entries
+      const nonAdminEntries = entries.filter(entry => entry.userId !== adminUser?.id);
+      setAllEntries(nonAdminEntries);
+      setLoading(false);
+    });
+  }, [adminUser]);
 
   const chartData = processMoodData(allEntries);
   const hasEntries = allEntries.length > 0;
 
-  if (!isMounted || loading || userLoading) {
+  if (loading || userLoading) {
     return (
         <div className="flex justify-center min-h-screen">
           <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -108,23 +85,7 @@ export default function AdminOverviewPage() {
         </div>
     )
   }
-
-  if (!isAdmin) {
-    return (
-        <div className="flex justify-center min-h-screen items-center">
-            <Card className="max-w-md text-center">
-                <CardHeader>
-                    <CardTitle className="flex items-center justify-center gap-2"><ShieldAlert /> Access Denied</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>You do not have permission to view this page.</p>
-                    <Button onClick={() => router.push('/')} className="mt-4">Go to Homepage</Button>
-                </CardContent>
-            </Card>
-        </div>
-    );
-  }
-
+  
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
       <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -158,4 +119,15 @@ export default function AdminOverviewPage() {
       </main>
     </div>
   );
+}
+
+/**
+ * Renders the admin overview page, which displays a chart summarizing all non-admin user moods.
+ */
+export default function AdminOverviewPage() {
+    return (
+        <AdminAuth>
+            <Overview />
+        </AdminAuth>
+    );
 }

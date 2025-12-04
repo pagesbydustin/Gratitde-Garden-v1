@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Notebook, BarChart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminPortal } from '@/components/admin/AdminPortal';
+import { usePathname } from 'next/navigation';
 
 
 /**
@@ -25,6 +26,7 @@ export default function Home() {
   const { settings } = useContext(SettingsContext);
   const { currentUser, loading: userLoading } = useContext(UserContext);
   const [showExplanation, setShowExplanation] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (settings) {
@@ -36,12 +38,13 @@ export default function Home() {
     return <LoadingState />;
   }
   
-  const isAdmin = currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdminSelected = currentUser?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com');
+  const isAdminPage = pathname.startsWith('/admin');
 
-  if (isAdmin) {
+  if (isAdminSelected && !isAdminPage) {
     return <AdminPortal />;
   }
-
+  
   return (
     <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
       <main className="w-full max-w-2xl px-4 py-8 md:py-12 space-y-12">
@@ -130,7 +133,7 @@ function LoadingState() {
  * It checks if the current user has already posted today.
  */
 function NewEntrySection() {
-  const { entries, loading } = useContext(UserContext);
+  const { entries, loading, currentUser } = useContext(UserContext);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -139,6 +142,17 @@ function NewEntrySection() {
 
   if (loading || !isClient) {
     return <Skeleton className="h-64 w-full" />;
+  }
+
+  if (!currentUser) {
+    return (
+      <Card className="text-center">
+        <CardHeader>
+          <CardTitle>Welcome!</CardTitle>
+          <CardDescription>Select a user profile from the dropdown in the header to get started.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
   }
   
   const hasPostedToday = entries.some(entry => {

@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { GratitudeIcon } from '@/components/icons';
@@ -18,11 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AdminAuthContext } from '@/context/AdminAuthContext';
+
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
 export function GlobalHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { users, currentUser, setCurrentUser } = useContext(UserContext);
+  const { users, currentUser, setCurrentUser, loading: userLoading } = useContext(UserContext);
+  const { isAdminLoggedIn, login } = useContext(AdminAuthContext);
   const { toast } = useToast();
 
   const handleUserChange = (userId: string) => {
@@ -33,6 +38,9 @@ export function GlobalHeader() {
             title: `Switched to ${selectedUser.name}`,
             description: `You are now viewing the journal as ${selectedUser.name}.`,
         });
+        if (selectedUser.email !== ADMIN_EMAIL) {
+          router.push('/');
+        }
     }
   };
 
@@ -46,6 +54,22 @@ export function GlobalHeader() {
     { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/admin/overview', label: 'Stats Overview' },
   ];
+  
+  const isAdminSelected = currentUser?.email === ADMIN_EMAIL;
+  
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      if (isAdminSelected && href.startsWith('/admin')) {
+        if (!isAdminLoggedIn) {
+            e.preventDefault();
+            login().then(success => {
+                if (success) {
+                    router.push(href);
+                }
+            });
+        }
+      }
+      setIsSheetOpen(false);
+  }
 
   const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => (
     <Button
@@ -53,14 +77,28 @@ export function GlobalHeader() {
       variant={pathname === href ? 'secondary' : 'ghost'}
       size={isMobile ? 'lg' : 'sm'}
       className={cn(isMobile && 'w-full justify-start text-lg')}
-      onClick={() => setIsSheetOpen(false)}
     >
-      <Link href={href}>{label}</Link>
+      <Link href={href} onClick={(e) => handleNavClick(e, href)}>{label}</Link>
     </Button>
   );
   
-  const isAdmin = currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  const linksToShow = isAdmin ? adminLinks : navLinks.filter(link => link.href !== '/');
+  const linksToShow = isAdminSelected ? adminLinks : navLinks.filter(link => link.href !== '/');
+
+  useEffect(() => {
+    if (userLoading) return;
+    
+    // If the admin user is selected but not logged in, and tries to access an admin page directly
+    if (isAdminSelected && !isAdminLoggedIn && pathname.startsWith('/admin')) {
+      login().then(success => {
+        if (!success) {
+          router.push('/');
+        }
+      })
+    } else if (!isAdminSelected && pathname.startsWith('/admin')) {
+      // If a non-admin user tries to access an admin page
+      router.push('/');
+    }
+  }, [isAdminSelected, isAdminLoggedIn, pathname, router, login, userLoading]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">

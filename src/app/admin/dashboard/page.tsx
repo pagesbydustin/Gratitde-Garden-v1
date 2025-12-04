@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getUsers } from '@/lib/actions';
+import { AdminAuth } from '@/components/admin/AdminAuth';
 
 const settingsFormSchema = z.object({
     gratitudePrompt: z.string().min(5, 'Prompt must be at least 5 characters.'),
@@ -29,7 +30,7 @@ const settingsFormSchema = z.object({
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
-export default function AdminDashboardPage() {
+function Dashboard() {
     const { currentUser, loading: userLoading, deleteUser, updateUser } = useContext(UserContext);
     const { settings, updateSettings } = useContext(SettingsContext);
     const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -37,7 +38,6 @@ export default function AdminDashboardPage() {
     const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [isMounted, setIsMounted] = useState(false);
     const [isSettingsPending, startSettingsTransition] = useTransition();
     const { toast } = useToast();
 
@@ -48,9 +48,7 @@ export default function AdminDashboardPage() {
             showExplanation: true,
         },
     });
-    
-    const isAdmin = currentUser?.email === ADMIN_EMAIL;
-    
+        
     const fetchUsers = async () => {
         setUsersLoading(true);
         const users = await getUsers();
@@ -59,20 +57,9 @@ export default function AdminDashboardPage() {
     }
 
     useEffect(() => {
-        setIsMounted(true);
-        if (isAdmin) {
-           fetchUsers();
-        }
-    }, [isAdmin]);
+        fetchUsers();
+    }, []);
     
-    useEffect(() => {
-        if (isMounted && !userLoading) {
-            if (!isAdmin) {
-                router.push('/');
-            }
-        }
-    }, [currentUser, router, isMounted, userLoading, isAdmin]);
-
     useEffect(() => {
         if (settings) {
             form.reset(settings);
@@ -124,7 +111,7 @@ export default function AdminDashboardPage() {
         });
     }
 
-    if (!isMounted || userLoading || !currentUser) {
+    if (userLoading || usersLoading) {
         return (
              <div className="flex justify-center min-h-screen">
                 <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -142,23 +129,6 @@ export default function AdminDashboardPage() {
             </div>
         );
     }
-
-    if (!isAdmin) {
-        return (
-            <div className="flex justify-center min-h-screen items-center">
-                <Card className="max-w-md text-center">
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-center gap-2"><ShieldAlert /> Access Denied</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>You do not have permission to view this page.</p>
-                        <Button onClick={() => router.push('/')} className="mt-4">Go to Homepage</Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
 
     return (
         <div className="flex justify-center min-h-screen bg-background text-foreground font-body">
@@ -229,7 +199,7 @@ export default function AdminDashboardPage() {
                             <CardTitle>All Users</CardTitle>
                             <CardDescription>Add, edit, or remove user profiles.</CardDescription>
                         </div>
-                        <Button onClick={handleAddUser} disabled>
+                        <Button onClick={handleAddUser} disabled={false}>
                             <UserPlus className="mr-2" />
                             Add User
                         </Button>
@@ -300,4 +270,13 @@ export default function AdminDashboardPage() {
             </main>
         </div>
     );
+}
+
+
+export default function AdminDashboardPage() {
+    return (
+        <AdminAuth>
+            <Dashboard />
+        </AdminAuth>
+    )
 }
