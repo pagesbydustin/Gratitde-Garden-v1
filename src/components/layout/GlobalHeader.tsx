@@ -129,7 +129,7 @@ export function GlobalHeader() {
                 ))}
             </nav>
             
-            <Select onValueChange={handleUserChange} value={isClient ? currentUser?.id : ''}>
+            <Select onValueChange={handleUserChange} value={isClient && currentUser ? currentUser.id : ''}>
               <SelectTrigger className="w-[180px] hidden md:flex">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -158,7 +158,7 @@ export function GlobalHeader() {
                         </SheetHeader>
                         <div className="flex flex-col gap-4 pt-8">
                              <div className="px-2">
-                                <Select onValueChange={handleUserChange} value={isClient ? currentUser?.id : ''}>
+                                <Select onValueChange={handleUserChange} value={isClient && currentUser ? currentUser.id : ''}>
                                     <SelectTrigger>
                                         <div className="flex items-center gap-2">
                                             <User className="h-4 w-4" />
