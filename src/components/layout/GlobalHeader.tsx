@@ -128,7 +128,7 @@ export function GlobalHeader() {
               <SelectTrigger className="w-[180px] hidden md:flex">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <SelectValue placeholder="Select a user" />
+                  <SelectValue placeholder="Choose a profile" />
                 </div>
               </SelectTrigger>
               <SelectContent>
@@ -155,7 +155,7 @@ export function GlobalHeader() {
                              <div className="px-2">
                                 <Select onValueChange={handleUserChange} value={currentUser?.id}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a user" />
+                                        <SelectValue placeholder="Choose a profile" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {users.map(user => (
