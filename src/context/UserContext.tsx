@@ -3,7 +3,7 @@
 
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { type User, type JournalEntry } from '@/lib/types';
-import { getEntries as apiGetEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry, deleteUser as apiDeleteUser, updateUser as apiUpdateUser, getUsers as apiGetUsers } from '@/lib/actions';
+import { getEntries as apiGetEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry, deleteUser as apiDeleteUser, updateUser as apiUpdateUser, getUsers as apiGetUsers, getAllEntries as apiGetAllEntries } from '@/lib/actions';
 
 /**
  * The shape of the UserContext.
@@ -57,14 +57,19 @@ export const UserContext = createContext<UserContextType>({
 export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [allEntries, setAllEntries] = useState<JournalEntry[]>([]);
+  const [currentUserEntries, setCurrentUserEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const refreshUsers = useCallback(async () => {
       const fetchedUsers = await apiGetUsers();
       setUsers(fetchedUsers);
       return fetchedUsers;
+  }, []);
+
+  const refreshAllEntries = useCallback(async () => {
+    const allEntries = await apiGetAllEntries();
+    setAllEntries(allEntries);
   }, []);
 
   const setCurrentUser = useCallback((user: User | null) => {
@@ -86,12 +91,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     async function loadInitialData() {
       setLoading(true);
       const fetchedUsers = await refreshUsers();
+      await refreshAllEntries();
       
       try {
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          // Verify that the stored user still exists in the fetched users
           if (fetchedUsers.some(u => u.id === parsedUser.id)) {
             setCurrentUserState(parsedUser);
           } else if (fetchedUsers.length > 0) {
@@ -106,61 +111,51 @@ export function UserProvider({ children }: { children: ReactNode }) {
             setCurrentUserState(fetchedUsers[0]);
           }
       } finally {
-        setIsInitialLoad(false);
+        setLoading(false);
       }
     }
     loadInitialData();
-  }, [refreshUsers, setCurrentUser]);
+  }, [refreshUsers, refreshAllEntries, setCurrentUser]);
 
 
-  // Fetch entries when the current user changes
+  // Filter entries when the current user or all entries change
   useEffect(() => {
-    if (isInitialLoad) return;
-    
     if (currentUser?.id) {
-      setLoading(true);
-      apiGetEntries(currentUser.id).then((userEntries) => {
-        setEntries(userEntries);
-        setLoading(false);
-      });
+      const userEntries = allEntries.filter(entry => entry.userId === currentUser.id);
+      setCurrentUserEntries(userEntries);
     } else {
-      setEntries([]);
-      setLoading(false);
+      setCurrentUserEntries([]);
     }
-  }, [currentUser, isInitialLoad]);
+  }, [currentUser, allEntries]);
 
   const addEntry = useCallback(async (data: { text: string; moodScore: number; }) => {
     if (!currentUser?.id) return { success: false, error: 'No user selected' };
     
     const result = await apiAddEntry({ ...data, userId: currentUser.id });
     if (result.success) {
-      // Re-fetch entries to get the latest list
-      const userEntries = await apiGetEntries(currentUser.id);
-      setEntries(userEntries);
+      await refreshAllEntries();
     }
     return result;
-  }, [currentUser]);
+  }, [currentUser, refreshAllEntries]);
 
   const updateEntry = useCallback(async (data: { id: string; text: string; moodScore: number; }) => {
     if (!currentUser?.id) return { success: false, error: 'No user selected' };
 
     const result = await apiUpdateEntry({ ...data, userId: currentUser.id });
     if (result.success) {
-       // Re-fetch entries to get the latest list
-      const userEntries = await apiGetEntries(currentUser.id);
-      setEntries(userEntries);
+      await refreshAllEntries();
     }
     return result;
-  }, [currentUser]);
+  }, [currentUser, refreshAllEntries]);
   
   const value = {
     users,
     currentUser,
     setCurrentUser,
-    entries,
+    entries: currentUserEntries,
     addEntry,
     updateEntry,
-    loading: loading || isInitialLoad,
+    loading,
     updateUser: apiUpdateUser,
     deleteUser: apiDeleteUser,
     refreshUsers,
