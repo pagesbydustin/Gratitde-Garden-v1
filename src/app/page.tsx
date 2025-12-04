@@ -34,17 +34,19 @@ export default function Home() {
       setShowExplanation(settings.showExplanation);
     }
   }, [settings]);
-
-  if (userLoading) {
-    return <LoadingState />;
-  }
   
   const isAdminSelected = currentUser?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com');
   const isAdminPage = pathname.startsWith('/admin');
 
-  // If the admin is selected, they should be on an admin page. Redirect if not.
-  if (isAdminSelected && !isAdminPage) {
-    router.push('/admin/dashboard');
+  useEffect(() => {
+    // If the admin is selected, they should be on an admin page. Redirect if not.
+    if (isAdminSelected && !isAdminPage) {
+      router.push('/admin/dashboard');
+    }
+  }, [isAdminSelected, isAdminPage, router]);
+
+
+  if (userLoading || (isAdminSelected && !isAdminPage)) {
     return <LoadingState />;
   }
   
