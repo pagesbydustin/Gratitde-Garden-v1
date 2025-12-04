@@ -43,10 +43,9 @@ export function GlobalHeader() {
             description: `You are now viewing the journal as ${selectedUser.name}.`,
         });
         
-        // If the newly selected user is not an admin but is on an admin page, redirect.
-        if (selectedUser.email !== ADMIN_EMAIL && pathname.startsWith('/admin')) {
-          router.push('/');
-        } else {
+        if (selectedUser.email === ADMIN_EMAIL) {
+          router.push('/admin/dashboard');
+        } else if (pathname.startsWith('/admin')) {
           router.push('/');
         }
     }
@@ -67,7 +66,7 @@ export function GlobalHeader() {
   
   const handleNavClick = (href: string) => {
       setIsSheetOpen(false);
-      router.push(href);
+      // No need to call router.push, as Link already does it.
   }
 
   const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => {
@@ -76,20 +75,22 @@ export function GlobalHeader() {
         return null;
     }
     
-    // For admin users, regular nav links should not be rendered.
-    if (!href.startsWith('/admin') && isAdminSelected) {
+    // For admin users, regular nav links should not be rendered on mobile/desktop nav, but home should still work.
+    const isRegularNavLink = navLinks.some(link => link.href === href);
+    if (isRegularNavLink && isAdminSelected) {
         return null;
     }
       
     return (
-        <Button
-            asChild
-            variant={pathname === href ? 'secondary' : 'ghost'}
-            size={isMobile ? 'lg' : 'sm'}
-            className={cn(isMobile && 'w-full justify-start text-lg')}
-        >
-            <Link href={href} onClick={() => handleNavClick(href)}>{label}</Link>
-        </Button>
+      <Button
+        asChild
+        variant={pathname === href ? 'secondary' : 'ghost'}
+        size={isMobile ? 'lg' : 'sm'}
+        className={cn(isMobile && 'w-full justify-start text-lg')}
+        onClick={() => setIsSheetOpen(false)}
+      >
+        <Link href={href}>{label}</Link>
+      </Button>
     );
   }
   

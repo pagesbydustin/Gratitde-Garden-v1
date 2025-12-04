@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Notebook, BarChart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminPortal } from '@/components/admin/AdminPortal';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 
 /**
@@ -27,6 +27,7 @@ export default function Home() {
   const { currentUser, loading: userLoading } = useContext(UserContext);
   const [showExplanation, setShowExplanation] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (settings) {
@@ -41,8 +42,10 @@ export default function Home() {
   const isAdminSelected = currentUser?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com');
   const isAdminPage = pathname.startsWith('/admin');
 
+  // If the admin is selected, they should be on an admin page. Redirect if not.
   if (isAdminSelected && !isAdminPage) {
-    return <AdminPortal />;
+    router.push('/admin/dashboard');
+    return <LoadingState />;
   }
   
   return (
