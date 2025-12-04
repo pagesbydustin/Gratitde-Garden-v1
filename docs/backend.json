@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -6,14 +7,18 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "number",
-          "description": "A unique identifier for the user."
+          "type": "string",
+          "description": "A unique identifier for the user, typically the Firebase Auth UID."
         },
         "name": {
           "type": "string",
           "description": "The display name of the user."
         },
-        "can-edit": {
+        "email": {
+          "type": "string",
+          "description": "The user's email address."
+        },
+        "can_edit": {
           "type": "boolean",
           "description": "A flag indicating whether the user has permission to edit entries."
         }
@@ -21,7 +26,8 @@
       "required": [
         "id",
         "name",
-        "can-edit"
+        "email",
+        "can_edit"
       ]
     },
     "JournalEntry": {
@@ -31,14 +37,14 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "A unique identifier for the entry, typically a UUID."
+          "description": "A unique identifier for the entry, typically a Firestore document ID."
         },
         "date": {
           "type": "string",
           "format": "date-time",
           "description": "The ISO 8601 date string of when the entry was created."
         },
-        "moodScore": {
+        "mood_score": {
           "type": "number",
           "description": "A numerical score from 1 to 5 representing the user's mood."
         },
@@ -46,17 +52,17 @@
           "type": "string",
           "description": "The text content of the journal entry."
         },
-        "userId": {
-          "type": "number",
+        "user_id": {
+          "type": "string",
           "description": "The ID of the user who created the entry, linking to a User document."
         }
       },
       "required": [
         "id",
         "date",
-        "moodScore",
+        "mood_score",
         "text",
-        "userId"
+        "user_id"
       ]
     }
   },
@@ -64,5 +70,19 @@
     "providers": [
       "anonymous"
     ]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Stores user profile information."
+    },
+    "/users/{userId}/entries/{entryId}": {
+      "schema": {
+        "$ref": "#/entities/JournalEntry"
+      },
+      "description": "Stores the journal entries for a specific user."
+    }
   }
 }

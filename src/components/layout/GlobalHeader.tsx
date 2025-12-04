@@ -7,15 +7,24 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { GratitudeIcon } from '@/components/icons';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserSelection } from './UserSelection';
 import { UserContext } from '@/context/UserContext';
+import { auth } from '@/firebase/client';
+import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export function GlobalHeader() {
   const pathname = usePathname();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { currentUser } = useContext(UserContext);
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    toast({ title: "Signed Out", description: "You have been successfully signed out." });
+  };
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -40,7 +49,7 @@ export function GlobalHeader() {
     </Button>
   );
   
-  const isAdmin = currentUser?.name === 'Admin';
+  const isAdmin = currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const linksToShow = isAdmin ? adminLinks : navLinks.filter(link => link.href !== '/');
 
   return (
@@ -62,12 +71,18 @@ export function GlobalHeader() {
                 {linksToShow.map((link) => (
                     <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
-                <UserSelection />
+                {currentUser && (
+                   <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                    </Button>
+                )}
+                {!currentUser && <UserSelection />}
             </nav>
 
             {/* Mobile Navigation */}
             <div className="md:hidden flex items-center">
-                <UserSelection />
+                {!currentUser && <UserSelection />}
                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon" className='ml-2'>
@@ -84,6 +99,12 @@ export function GlobalHeader() {
                             {linksToShow.map((link) => (
                                 <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
                             ))}
+                             {currentUser && (
+                                <Button variant="ghost" className="w-full justify-start text-lg" onClick={handleSignOut}>
+                                    <LogOut className="mr-2 h-5 w-5" />
+                                    Sign Out
+                                </Button>
+                            )}
                         </div>
                     </SheetContent>
                 </Sheet>

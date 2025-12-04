@@ -2,15 +2,17 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { type JournalEntry, type User } from '@/lib/types';
+import { type JournalEntry } from '@/lib/types';
 import { MoodsChart } from '@/components/overview/MoodsChart';
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getAllEntries, getUsers } from '@/lib/actions';
+import { getAllEntries } from '@/lib/actions';
 import { ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
 const moodMap: Record<number, { label: string }> = {
   1: { label: 'Awful' },
@@ -53,10 +55,10 @@ function processMoodData(entries: JournalEntry[]) {
 export default function AdminOverviewPage() {
   const { currentUser, loading: userLoading } = useContext(UserContext);
   const [allEntries, setAllEntries] = useState<JournalEntry[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     setIsMounted(true);
@@ -64,21 +66,23 @@ export default function AdminOverviewPage() {
 
   useEffect(() => {
     if (isMounted && !userLoading) {
-      if (currentUser?.name !== 'Admin') {
+      if (!isAdmin) {
         router.push('/');
         return;
       }
     
-      Promise.all([getAllEntries(), getUsers()]).then(([entries, users]) => {
-        const adminUser = users.find(u => u.name === 'Admin');
-        const nonAdminUsers = users.filter(u => u.name !== 'Admin');
-        const nonAdminEntries = entries.filter(e => e.userId !== adminUser?.id);
+      getAllEntries().then((entries) => {
+        // Filter out admin entries
+        const nonAdminEntries = entries.filter(entry => {
+            const entryUser = entry.userId;
+            // Assuming we can get user info or at least check against admin ID
+            return entryUser !== currentUser?.id;
+        });
         setAllEntries(nonAdminEntries);
-        setAllUsers(nonAdminUsers);
         setLoading(false);
       });
     }
-  }, [currentUser, userLoading, router, isMounted]);
+  }, [currentUser, userLoading, router, isMounted, isAdmin]);
 
   const chartData = processMoodData(allEntries);
   const hasEntries = allEntries.length > 0;
@@ -105,7 +109,7 @@ export default function AdminOverviewPage() {
     )
   }
 
-  if (currentUser?.name !== 'Admin') {
+  if (!isAdmin) {
     return (
         <div className="flex justify-center min-h-screen items-center">
             <Card className="max-w-md text-center">

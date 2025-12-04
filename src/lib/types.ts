@@ -1,3 +1,5 @@
+import type { User as FirebaseUser } from 'firebase/auth';
+
 /**
  * Represents a single journal entry.
  */
@@ -13,17 +15,17 @@ export type JournalEntry = {
   /** An optional prompt that inspired the entry. */
   prompt?: string;
   /** The ID of the user who created the entry. */
-  userId: number;
+  userId: string;
 };
 
 /**
  * Represents a user of the application.
  */
-export type User = {
+export interface User extends Partial<FirebaseUser> {
   /** A unique identifier for the user. */
-  id: number;
+  id?: string;
   /** The name of the user. */
-  name: string;
+  name?: string | null;
   /** A flag indicating whether the user has permission to edit entries. */
-  "can-edit": boolean;
-};
+  'can-edit'?: boolean;
+}

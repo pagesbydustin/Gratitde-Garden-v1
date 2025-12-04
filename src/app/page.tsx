@@ -5,7 +5,7 @@ import { Suspense, useContext, useEffect, useState } from 'react';
 import { GratitudeIcon } from '@/components/icons';
 import { NewEntryForm } from '@/components/gratitude/NewEntryForm';
 import { EntryList } from '@/components/gratitude/EntryList';
-import { endOfWeek, isWithinInterval, startOfWeek } from 'date-fns';
+import { endOfWeek, isWithinInterval, startOfWeek, parseISO } from 'date-fns';
 import { UserContext } from '@/context/UserContext';
 import { SettingsContext } from '@/context/SettingsContext';
 import { type JournalEntry } from '@/lib/types';
@@ -35,8 +35,10 @@ export default function Home() {
   if (userLoading) {
     return <LoadingState />;
   }
+  
+  const isAdmin = currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
-  if (currentUser?.name === 'Admin') {
+  if (isAdmin) {
     return <AdminPortal />;
   }
 
@@ -70,7 +72,7 @@ export default function Home() {
                     <User className="h-5 w-5" />
                   </div>
                   <p>
-                    <strong className="text-foreground">1. Select Your Profile:</strong> Use the dropdown menu in the top right to choose your user profile.
+                    <strong className="text-foreground">1. Sign In:</strong> Use the "Sign In" button to start an anonymous session.
                   </p>
                 </div>
                 <div className="flex items-start gap-4">
@@ -140,7 +142,7 @@ function NewEntrySection() {
   }
   
   const hasPostedToday = entries.some(entry => {
-    const entryDate = new Date(entry.date);
+    const entryDate = parseISO(entry.date);
     const today = new Date();
     return entryDate.getFullYear() === today.getFullYear() &&
            entryDate.getMonth() === today.getMonth() &&
@@ -168,7 +170,7 @@ function PastEntriesSection() {
     const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Saturday
 
     const currentWeekEntries = entries.filter(entry => {
-        const entryDate = new Date(entry.date);
+        const entryDate = parseISO(entry.date);
         return isWithinInterval(entryDate, { start: weekStart, end: weekEnd });
     });
     setWeekEntries(currentWeekEntries);

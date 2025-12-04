@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,68 +10,48 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { User as UserIcon, ChevronsUpDown } from 'lucide-react';
-import { UserContext } from '@/context/UserContext';
-import { AdminPasscodeDialog } from './AdminPasscodeDialog';
-import type { User } from '@/lib/types';
+import { signInAnonymously } from 'firebase/auth';
+import { auth } from '@/firebase/client';
+import { useToast } from '@/hooks/use-toast';
+import { addUser } from '@/lib/actions';
 
 /**
- * A dropdown menu component that allows the user to select a user profile.
- * The selected user is managed through the `UserContext`.
+ * A dropdown menu component that allows the user to sign in anonymously.
  */
 export function UserSelection() {
-  const { users, currentUser, setCurrentUser } = useContext(UserContext);
-  const [isPasscodeDialogOpen, setIsPasscodeDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { toast } = useToast();
 
-  const handleUserSelect = (user: User) => {
-    if (user.name === 'Admin') {
-      setSelectedUser(user);
-      setIsPasscodeDialogOpen(true);
-    } else {
-      setCurrentUser(user);
+  const handleSignIn = async () => {
+    try {
+      const userCredential = await signInAnonymously(auth);
+      const user = userCredential.user;
+      
+      // Create a user document in Firestore
+      await addUser({
+        id: user.uid,
+        name: `User ${user.uid.substring(0, 5)}`,
+        email: user.email || 'anonymous',
+        'can-edit': true,
+      });
+
+      toast({
+        title: 'Welcome!',
+        description: 'You are now signed in anonymously.',
+      });
+    } catch (error) {
+      console.error('Anonymous sign-in failed', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-in Failed',
+        description: 'Could not sign in. Please try again.',
+      });
     }
   };
-
-  const handlePasscodeSuccess = () => {
-    if (selectedUser) {
-      setCurrentUser(selectedUser);
-    }
-    setIsPasscodeDialogOpen(false);
-  };
-  
-  const adminUser = users.find(u => u.name === 'Admin');
-  const displayUser = currentUser ?? adminUser;
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-[180px] justify-between">
-            {displayUser ? (
-              <>
-                <UserIcon className="mr-2 h-4 w-4" />
-                {displayUser.name}
-              </>
-            ) : (
-              'Select User'
-            )}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[180px]">
-          {users.map((user) => (
-            <DropdownMenuItem key={user.id} onSelect={() => handleUserSelect(user)}>
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>{user.name}</span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <AdminPasscodeDialog
-        isOpen={isPasscodeDialogOpen}
-        onClose={() => setIsPasscodeDialogOpen(false)}
-        onSuccess={handlePasscodeSuccess}
-      />
-    </>
+    <Button onClick={handleSignIn}>
+        <UserIcon className="mr-2 h-4 w-4" />
+        Sign In to Start
+    </Button>
   );
 }

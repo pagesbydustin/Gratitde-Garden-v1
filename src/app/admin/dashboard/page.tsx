@@ -20,15 +20,20 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getUsers } from '@/lib/actions';
 
 const settingsFormSchema = z.object({
     gratitudePrompt: z.string().min(5, 'Prompt must be at least 5 characters.'),
     showExplanation: z.boolean(),
 });
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
+
 export default function AdminDashboardPage() {
-    const { currentUser, users, loading, deleteUser, refreshUsers } = useContext(UserContext);
+    const { currentUser, loading: userLoading, deleteUser, updateUser } = useContext(UserContext);
     const { settings, updateSettings } = useContext(SettingsContext);
+    const [allUsers, setAllUsers] = useState<User[]>([]);
+    const [usersLoading, setUsersLoading] = useState(true);
     const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -36,33 +41,44 @@ export default function AdminDashboardPage() {
     const [isSettingsPending, startSettingsTransition] = useTransition();
     const { toast } = useToast();
 
-    const settingsForm = useForm<z.infer<typeof settingsFormSchema>>({
+    const form = useForm<z.infer<typeof settingsFormSchema>>({
         resolver: zodResolver(settingsFormSchema),
         defaultValues: {
             gratitudePrompt: '',
             showExplanation: true,
         },
     });
+    
+    const isAdmin = currentUser?.email === ADMIN_EMAIL;
+    
+    const fetchUsers = async () => {
+        setUsersLoading(true);
+        const users = await getUsers();
+        setAllUsers(users);
+        setUsersLoading(false);
+    }
 
     useEffect(() => {
         setIsMounted(true);
-    }, []);
+        if (isAdmin) {
+           fetchUsers();
+        }
+    }, [isAdmin]);
     
     useEffect(() => {
-        if (isMounted && !loading) {
-            if (currentUser?.name !== 'Admin') {
+        if (isMounted && !userLoading) {
+            if (!isAdmin) {
                 router.push('/');
             }
         }
-    }, [currentUser, router, isMounted, loading]);
+    }, [currentUser, router, isMounted, userLoading, isAdmin]);
 
     useEffect(() => {
         if (settings) {
-            settingsForm.reset(settings);
+            form.reset(settings);
         }
-    }, [settings, settingsForm]);
+    }, [settings, form]);
     
-
     const handleAddUser = () => {
         setEditingUser(null);
         setIsDialogOpen(true);
@@ -73,10 +89,11 @@ export default function AdminDashboardPage() {
         setIsDialogOpen(true);
     };
     
-    const handleDeleteUser = async (userId: number) => {
+    const handleDeleteUser = async (userId: string) => {
         const result = await deleteUser(userId);
         if (result.success) {
             toast({ title: 'User Deleted', description: 'The user has been successfully removed.' });
+            fetchUsers(); // Refresh users list
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not delete the user.' });
         }
@@ -85,7 +102,7 @@ export default function AdminDashboardPage() {
     const handleDialogClose = (wasSaved: boolean) => {
         setIsDialogOpen(false);
         if (wasSaved) {
-            refreshUsers();
+            fetchUsers(); // Refresh users list
         }
     }
 
@@ -107,7 +124,7 @@ export default function AdminDashboardPage() {
         });
     }
 
-    if (!isMounted || loading || !currentUser) {
+    if (!isMounted || userLoading || !currentUser) {
         return (
              <div className="flex justify-center min-h-screen">
                 <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -126,7 +143,7 @@ export default function AdminDashboardPage() {
         );
     }
 
-    if (currentUser.name !== 'Admin') {
+    if (!isAdmin) {
         return (
             <div className="flex justify-center min-h-screen items-center">
                 <Card className="max-w-md text-center">
@@ -157,10 +174,10 @@ export default function AdminDashboardPage() {
                         <CardDescription>Manage global settings for the application.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <Form {...settingsForm}>
-                            <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
+                         <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSettingsSubmit)} className="space-y-6">
                                 <FormField
-                                    control={settingsForm.control}
+                                    control={form.control}
                                     name="gratitudePrompt"
                                     render={({ field }) => (
                                         <FormItem>
@@ -176,7 +193,7 @@ export default function AdminDashboardPage() {
                                     )}
                                 />
                                 <FormField
-                                    control={settingsForm.control}
+                                    control={form.control}
                                     name="showExplanation"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
@@ -212,9 +229,9 @@ export default function AdminDashboardPage() {
                             <CardTitle>All Users</CardTitle>
                             <CardDescription>Add, edit, or remove user profiles.</CardDescription>
                         </div>
-                        <Button onClick={handleAddUser}>
+                        <Button onClick={handleAddUser} disabled>
                             <UserPlus className="mr-2" />
-                            Add User
+                            Add User (Via Auth)
                         </Button>
                     </CardHeader>
                     <CardContent>
@@ -222,26 +239,34 @@ export default function AdminDashboardPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
+                                    <TableHead>Email</TableHead>
                                     <TableHead>Can Edit Entries?</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.map(user => (
+                                {usersLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center">
+                                            <Skeleton className="h-8 w-full" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : allUsers.map(user => (
                                     <TableRow key={user.id}>
                                         <TableCell className="font-medium">{user.name}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
                                         <TableCell>
                                             {user['can-edit'] ? <Check className="text-green-500" /> : <div className="w-4 h-4" />}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)} disabled={user.name === 'Admin'}>
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(user)} disabled={user.email === ADMIN_EMAIL}>
                                                 <Pencil className="h-4 w-4" />
                                                 <span className="sr-only">Edit</span>
                                             </Button>
 
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" disabled={user.name === 'Admin'}>
+                                                    <Button variant="ghost" size="icon" disabled={user.email === ADMIN_EMAIL}>
                                                         <Trash className="h-4 w-4" />
                                                         <span className="sr-only">Delete</span>
                                                     </Button>
@@ -250,12 +275,12 @@ export default function AdminDashboardPage() {
                                                     <AlertDialogHeader>
                                                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete the user and all their associated entries.
+                                                            This action cannot be undone. This will permanently delete the user and all their associated entries from Firestore. The user will still exist in Firebase Authentication.
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>Delete</AlertDialogAction>
+                                                        <AlertDialogAction onClick={() => user.id && handleDeleteUser(user.id)}>Delete</AlertDialogAction>
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>

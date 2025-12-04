@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -79,7 +80,7 @@ export default function OverviewPage() {
                 <Skeleton className="h-[350px] w-full" />
               ) : !currentUser ? (
                 <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
-                  <p className="text-muted-foreground">Please select a user to see their overview.</p>
+                  <p className="text-muted-foreground">Please sign in to see your overview.</p>
                 </div>
               ) : hasEntries ? (
                 <MoodsChart data={moodData} />

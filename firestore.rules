@@ -1,0 +1,32 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Rules for user profiles
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Rules for journal entries
+    match /users/{userId}/entries/{entryId} {
+      allow read, list, create, update, delete: if isOwner(userId);
+    }
+    
+    // Rules for app settings
+    match /app-settings/global {
+      allow read;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.email == "admin@example.com";
+    }
+  }
+}

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { UserProvider } from '@/context/UserContext';
 import { SettingsProvider } from '@/context/SettingsContext';
+import { FirebaseClientProvider } from '@/firebase';
 
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' });
 
@@ -30,13 +31,15 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased', lora.variable)}>
-        <SettingsProvider>
-            <UserProvider>
-                <GlobalHeader />
-                {children}
-                <Toaster />
-            </UserProvider>
-        </SettingsProvider>
+        <FirebaseClientProvider>
+          <SettingsProvider>
+              <UserProvider>
+                  <GlobalHeader />
+                  {children}
+                  <Toaster />
+              </UserProvider>
+          </SettingsProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

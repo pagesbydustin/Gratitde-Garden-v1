@@ -1,3 +1,4 @@
+
 'use client';
 
 import { type JournalEntry } from '@/lib/types';
@@ -81,7 +82,7 @@ export default function ArchivePage() {
 
     const subject = `My Gratitude Garden Archive`;
     const body = formatEntriesForEmail(entries);
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailtoLink = `mailto:${currentUser.email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     
     window.location.href = mailtoLink;
   };
@@ -103,7 +104,7 @@ export default function ArchivePage() {
              </div>
           ) : !currentUser ? (
              <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
-              <p className="text-muted-foreground">Please select a user to see their archive.</p>
+              <p className="text-muted-foreground">Please sign in to see your archive.</p>
             </div>
           ) : sortedWeeks.length > 0 ? (
             <>

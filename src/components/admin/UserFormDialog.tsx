@@ -25,9 +25,11 @@ const formSchema = z.object({
     'can-edit': z.boolean().default(false),
 });
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
+
 export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
     const [isPending, startTransition] = useTransition();
-    const { addUser, updateUser } = useContext(UserContext);
+    const { updateUser } = useContext(UserContext);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -41,7 +43,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
     useEffect(() => {
         if (isOpen) {
             if (user) {
-                form.reset({ name: user.name, 'can-edit': user['can-edit'] });
+                form.reset({ name: user.name ?? '', 'can-edit': user['can-edit'] });
             } else {
                 form.reset({ name: '', 'can-edit': false });
             }
@@ -49,14 +51,14 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
     }, [user, form, isOpen]);
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
+        if (!user || !user.id) return;
+        
         startTransition(async () => {
-            const result = user 
-                ? await updateUser({ id: user.id, ...values })
-                : await addUser(values);
+            const result = await updateUser({ id: user.id!, ...values });
 
             if (result.success) {
                 toast({
-                    title: user ? 'User Updated' : 'User Added',
+                    title: 'User Updated',
                     description: `The user ${values.name} has been saved.`,
                 });
                 onClose(true);
@@ -69,6 +71,8 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
             }
         });
     };
+    
+    const isEditingAdmin = user?.email === ADMIN_EMAIL;
 
     return (
         <Dialog open={isOpen} onOpenChange={() => onClose(false)}>
@@ -88,7 +92,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="e.g., Jane Doe" {...field} disabled={user?.name === 'Admin'}/>
+                                        <Input placeholder="e.g., Jane Doe" {...field} disabled={isEditingAdmin}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -109,7 +113,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={field.onChange}
-                                            disabled={user?.name === 'Admin'}
+                                            disabled={isEditingAdmin}
                                         />
                                     </FormControl>
                                 </FormItem>
@@ -117,7 +121,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                         />
                         <DialogFooter>
                             <Button type="button" variant="ghost" onClick={() => onClose(false)}>Cancel</Button>
-                            <Button type="submit" disabled={isPending || user?.name === 'Admin'}>
+                            <Button type="submit" disabled={isPending || isEditingAdmin}>
                                 {isPending ? 'Saving...' : 'Save User'}
                             </Button>
                         </DialogFooter>
