@@ -29,6 +29,11 @@ export function GlobalHeader() {
   const { users, currentUser, setCurrentUser, loading: userLoading } = useContext(UserContext);
   const { logout: adminLogout } = useContext(AdminAuthContext);
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleUserChange = (userId: string) => {
     const selectedUser = users.find(u => u.id === userId);
@@ -124,7 +129,7 @@ export function GlobalHeader() {
                 ))}
             </nav>
             
-            <Select onValueChange={handleUserChange} value={currentUser?.id}>
+            <Select onValueChange={handleUserChange} value={isClient ? currentUser?.id : undefined}>
               <SelectTrigger className="w-[180px] hidden md:flex">
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -153,7 +158,7 @@ export function GlobalHeader() {
                         </SheetHeader>
                         <div className="flex flex-col gap-4 pt-8">
                              <div className="px-2">
-                                <Select onValueChange={handleUserChange} value={currentUser?.id}>
+                                <Select onValueChange={handleUserChange} value={isClient ? currentUser?.id : undefined}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Choose a profile" />
                                     </SelectTrigger>
