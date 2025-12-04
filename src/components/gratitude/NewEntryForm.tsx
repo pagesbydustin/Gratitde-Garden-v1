@@ -158,7 +158,7 @@ export function NewEntryForm({ hasPostedToday }: NewEntryFormProps) {
       <Card className="text-center">
         <CardHeader>
           <CardTitle>Welcome!</CardTitle>
-          <CardDescription>Please select a user to begin.</CardDescription>
+          <CardDescription>Get started by writing an entry below.</CardDescription>
         </CardHeader>
       </Card>
     );

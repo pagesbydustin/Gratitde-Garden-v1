@@ -85,7 +85,7 @@ export function EntryCard({ entry, priority = false }: EntryCardProps) {
      * @param values - The updated form values.
      */
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        if (!canEdit) return;
+        if (!canEdit || !currentUser) return;
 
         startTransition(async () => {
             const result = await updateEntry({ id: entry.id, ...values });

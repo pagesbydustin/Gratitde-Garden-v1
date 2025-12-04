@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Lora } from 'next/font/google';
 import './globals.css';
@@ -6,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { UserProvider } from '@/context/UserContext';
 import { SettingsProvider } from '@/context/SettingsContext';
-import { FirebaseClientProvider } from '@/firebase';
 
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' });
 
@@ -31,7 +31,6 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased', lora.variable)}>
-        <FirebaseClientProvider>
           <SettingsProvider>
               <UserProvider>
                   <GlobalHeader />
@@ -39,7 +38,6 @@ export default function RootLayout({
                   <Toaster />
               </UserProvider>
           </SettingsProvider>
-        </FirebaseClientProvider>
       </body>
     </html>
   );

@@ -231,7 +231,7 @@ export default function AdminDashboardPage() {
                         </div>
                         <Button onClick={handleAddUser} disabled>
                             <UserPlus className="mr-2" />
-                            Add User (Via Auth)
+                            Add User
                         </Button>
                     </CardHeader>
                     <CardContent>
@@ -275,7 +275,7 @@ export default function AdminDashboardPage() {
                                                     <AlertDialogHeader>
                                                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete the user and all their associated entries from Firestore. The user will still exist in Firebase Authentication.
+                                                            This action cannot be undone. This will permanently delete the user and all their associated entries.
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>

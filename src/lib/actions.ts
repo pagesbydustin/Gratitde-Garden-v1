@@ -125,6 +125,7 @@ export async function updateEntry(data: { id: string, text: string; moodScore: n
 export async function addUser(user: User) {
     if (!user.id) return { success: false, error: 'User ID is required' };
     const userRef = doc(firestore, 'users', user.id);
+    // Use setDoc here to create the document if it doesn't exist.
     await updateDoc(userRef, { ...user }, { merge: true });
     revalidatePath('/admin/dashboard');
     return { success: true, user };

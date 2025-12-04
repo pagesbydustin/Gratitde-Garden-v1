@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '@/context/UserContext';
 import type { User } from '@/lib/types';
+import { addUser } from '@/lib/actions';
 
 type UserFormDialogProps = {
     isOpen: boolean;
@@ -22,6 +23,7 @@ type UserFormDialogProps = {
 
 const formSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters.'),
+    email: z.string().email('Please enter a valid email.'),
     'can-edit': z.boolean().default(false),
 });
 
@@ -36,6 +38,7 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
+            email: '',
             'can-edit': false,
         },
     });
@@ -43,22 +46,22 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
     useEffect(() => {
         if (isOpen) {
             if (user) {
-                form.reset({ name: user.name ?? '', 'can-edit': user['can-edit'] });
+                form.reset({ name: user.name ?? '', email: user.email ?? '', 'can-edit': user['can-edit'] });
             } else {
-                form.reset({ name: '', 'can-edit': false });
+                form.reset({ name: '', email: '', 'can-edit': false });
             }
         }
     }, [user, form, isOpen]);
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
-        if (!user || !user.id) return;
-        
         startTransition(async () => {
-            const result = await updateUser({ id: user.id!, ...values });
+            const result = user && user.id 
+                ? await updateUser({ id: user.id, ...values })
+                : await addUser({ id: crypto.randomUUID(), ...values });
 
             if (result.success) {
                 toast({
-                    title: 'User Updated',
+                    title: user ? 'User Updated' : 'User Added',
                     description: `The user ${values.name} has been saved.`,
                 });
                 onClose(true);
@@ -93,6 +96,19 @@ export function UserFormDialog({ isOpen, onClose, user }: UserFormDialogProps) {
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
                                         <Input placeholder="e.g., Jane Doe" {...field} disabled={isEditingAdmin}/>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" placeholder="e.g., jane@example.com" {...field} disabled={isEditingAdmin}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

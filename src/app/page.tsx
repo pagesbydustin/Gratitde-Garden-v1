@@ -72,7 +72,7 @@ export default function Home() {
                     <User className="h-5 w-5" />
                   </div>
                   <p>
-                    <strong className="text-foreground">1. Sign In:</strong> Use the "Sign In" button to start an anonymous session.
+                    <strong className="text-foreground">1. Choose a Profile:</strong> Use the user switcher in the header to select a profile (or leave it as default).
                   </p>
                 </div>
                 <div className="flex items-start gap-4">

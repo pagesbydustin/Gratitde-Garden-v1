@@ -104,7 +104,7 @@ export default function ArchivePage() {
              </div>
           ) : !currentUser ? (
              <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
-              <p className="text-muted-foreground">Please sign in to see your archive.</p>
+              <p className="text-muted-foreground">Please select a user to see their archive.</p>
             </div>
           ) : sortedWeeks.length > 0 ? (
             <>

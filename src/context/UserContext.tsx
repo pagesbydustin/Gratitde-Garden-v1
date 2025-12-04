@@ -3,8 +3,23 @@
 
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { type User, type JournalEntry } from '@/lib/types';
-import { getEntries as apiGetEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry, deleteUser as apiDeleteUser, updateUser as apiUpdateUser } from '@/lib/actions';
-import { useUser } from '@/firebase';
+import { getEntries as apiGetEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry, deleteUser as apiDeleteUser, updateUser as apiUpdateUser, getUsers as apiGetUsers } from '@/lib/actions';
+
+// A default user for the single-user experience
+const defaultUser: User = {
+    id: 'default-user',
+    name: 'Grateful User',
+    email: 'user@example.com',
+    'can-edit': true,
+};
+
+const adminUser: User = {
+    id: 'admin-user',
+    name: 'Admin',
+    email: process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com',
+    'can-edit': true,
+};
+
 
 /**
  * The shape of the UserContext.
@@ -28,6 +43,8 @@ type UserContextType = {
   deleteUser: (userId: string) => Promise<any>;
   /** Function to refresh the list of users. */
   refreshUsers: () => Promise<void>;
+  /** Function to switch the current user. */
+  setCurrentUser: (user: User | null) => void;
 };
 
 /**
@@ -43,6 +60,7 @@ export const UserContext = createContext<UserContextType>({
   updateUser: async () => {},
   deleteUser: async () => {},
   refreshUsers: async () => {},
+  setCurrentUser: () => {},
 });
 
 /**
@@ -53,26 +71,20 @@ export const UserContext = createContext<UserContextType>({
  * @param {ReactNode} props.children - The child components to be wrapped by the provider.
  */
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { user: firebaseUser, loading: authLoading } = useUser();
-  const [users, setUsers] = useState<User[]>([]); // Only used for admin
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([defaultUser, adminUser]);
+  const [currentUser, setCurrentUser] = useState<User | null>(defaultUser);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refreshUsers = useCallback(async () => {
-    // This is now primarily for the admin dashboard
-    if (currentUser?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        // You could fetch all users here if needed for an admin view
-    }
-  }, [currentUser]);
+      const fetchedUsers = await apiGetUsers();
+      setUsers(fetchedUsers);
+  }, []);
 
-  // Set current user from Firebase Auth
   useEffect(() => {
-    setLoading(authLoading);
-    if (!authLoading) {
-      setCurrentUser(firebaseUser);
-    }
-  }, [firebaseUser, authLoading]);
+    // On initial load, you might want to get users from the backend
+    // For now, we use a hardcoded list.
+  }, []);
 
   // Fetch entries when the current user changes
   useEffect(() => {
@@ -115,7 +127,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const value = {
     users,
     currentUser,
-    setCurrentUser: () => { console.warn('setCurrentUser is deprecated. Auth state is managed by Firebase.')},
+    setCurrentUser,
     entries,
     addEntry,
     updateEntry,
