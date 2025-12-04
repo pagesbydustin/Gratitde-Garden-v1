@@ -1,0 +1,44 @@
+
+{
+  "users": [
+    {
+      "id": "default-user",
+      "name": "Grateful User",
+      "email": "user@example.com",
+      "can-edit": true
+    },
+    {
+      "id": "admin-user",
+      "name": "Admin",
+      "email": "admin@example.com",
+      "can-edit": true
+    }
+  ],
+  "entries": [
+    {
+      "id": "entry-1",
+      "date": "2024-05-10T10:00:00.000Z",
+      "moodScore": 5,
+      "text": "I'm so grateful for the beautiful weather today! The sun is shining and it feels amazing.",
+      "userId": "default-user"
+    },
+    {
+      "id": "entry-2",
+      "date": "2024-05-09T11:00:00.000Z",
+      "moodScore": 4,
+      "text": "Had a wonderful coffee with a dear friend. It's the small moments that count.",
+      "userId": "default-user"
+    },
+    {
+      "id": "entry-3",
+      "date": "2024-05-08T12:00:00.000Z",
+      "moodScore": 3,
+      "text": "Feeling okay today. Work was a bit stressful, but I'm glad it's over and I can relax now.",
+      "userId": "default-user"
+    }
+  ],
+  "settings": {
+    "gratitudePrompt": "What are you grateful for today?",
+    "showExplanation": true
+  }
+}
