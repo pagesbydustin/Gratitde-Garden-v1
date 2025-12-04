@@ -21,7 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getUsers } from '@/lib/actions';
-import { AdminAuth } from '@/components/admin/AdminAuth';
 
 const settingsFormSchema = z.object({
     gratitudePrompt: z.string().min(5, 'Prompt must be at least 5 characters.'),
@@ -30,8 +29,8 @@ const settingsFormSchema = z.object({
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
-function Dashboard() {
-    const { currentUser, loading: userLoading, deleteUser, updateUser } = useContext(UserContext);
+export default function Dashboard() {
+    const { currentUser, loading: userLoading, deleteUser, updateUser, users } = useContext(UserContext);
     const { settings, updateSettings } = useContext(SettingsContext);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [usersLoading, setUsersLoading] = useState(true);
@@ -48,6 +47,14 @@ function Dashboard() {
             showExplanation: true,
         },
     });
+
+    const isAdminUser = currentUser?.email === ADMIN_EMAIL;
+    
+    useEffect(() => {
+        if (!userLoading && !isAdminUser) {
+            router.push('/');
+        }
+    }, [userLoading, isAdminUser, router]);
         
     const fetchUsers = async () => {
         setUsersLoading(true);
@@ -111,7 +118,7 @@ function Dashboard() {
         });
     }
 
-    if (userLoading || usersLoading) {
+    if (userLoading || usersLoading || !isAdminUser) {
         return (
              <div className="flex justify-center min-h-screen">
                 <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -270,13 +277,4 @@ function Dashboard() {
             </main>
         </div>
     );
-}
-
-
-export default function AdminDashboardPage() {
-    return (
-        <AdminAuth>
-            <Dashboard />
-        </AdminAuth>
-    )
 }

@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AdminAuthContext } from '@/context/AdminAuthContext';
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
@@ -27,7 +26,6 @@ export function GlobalHeader() {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { users, currentUser, setCurrentUser, loading: userLoading } = useContext(UserContext);
-  const { isAdminLoggedIn, login } = useContext(AdminAuthContext);
   const { toast } = useToast();
 
   const handleUserChange = (userId: string) => {
@@ -38,6 +36,7 @@ export function GlobalHeader() {
             title: `Switched to ${selectedUser.name}`,
             description: `You are now viewing the journal as ${selectedUser.name}.`,
         });
+        // If the newly selected user is not an admin, redirect them to the homepage.
         if (selectedUser.email !== ADMIN_EMAIL) {
           router.push('/');
         }
@@ -58,14 +57,16 @@ export function GlobalHeader() {
   const isAdminSelected = currentUser?.email === ADMIN_EMAIL;
   
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-      if (isAdminSelected && href.startsWith('/admin')) {
-        if (!isAdminLoggedIn) {
+      if (isAdminSelected && !href.startsWith('/admin')) {
+        // Prevent admin from navigating to non-admin pages, except for the root
+        if(href !== '/') {
             e.preventDefault();
-            login().then(success => {
-                if (success) {
-                    router.push(href);
-                }
+            toast({
+                variant: 'destructive',
+                title: 'Navigation Restricted',
+                description: 'Admins can only access admin pages. Switch users to continue.',
             });
+            return;
         }
       }
       setIsSheetOpen(false);
@@ -83,22 +84,14 @@ export function GlobalHeader() {
   );
   
   const linksToShow = isAdminSelected ? adminLinks : navLinks.filter(link => link.href !== '/');
-
+  
   useEffect(() => {
-    if (userLoading) return;
-    
-    // If the admin user is selected but not logged in, and tries to access an admin page directly
-    if (isAdminSelected && !isAdminLoggedIn && pathname.startsWith('/admin')) {
-      login().then(success => {
-        if (!success) {
+      // If a non-admin user tries to access an admin page, redirect them.
+      if (!userLoading && !isAdminSelected && pathname.startsWith('/admin')) {
           router.push('/');
-        }
-      })
-    } else if (!isAdminSelected && pathname.startsWith('/admin')) {
-      // If a non-admin user tries to access an admin page
-      router.push('/');
-    }
-  }, [isAdminSelected, isAdminLoggedIn, pathname, router, login, userLoading]);
+      }
+  }, [isAdminSelected, pathname, router, userLoading]);
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">

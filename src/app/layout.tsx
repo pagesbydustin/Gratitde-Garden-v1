@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { UserProvider } from '@/context/UserContext';
 import { SettingsProvider } from '@/context/SettingsContext';
-import { AdminAuthProvider } from '@/context/AdminAuthContext';
 
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora' });
 
@@ -32,15 +31,13 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased', lora.variable)}>
-        <AdminAuthProvider>
-          <SettingsProvider>
-              <UserProvider>
-                  <GlobalHeader />
-                  {children}
-                  <Toaster />
-              </UserProvider>
-          </SettingsProvider>
-        </AdminAuthProvider>
+        <SettingsProvider>
+            <UserProvider>
+                <GlobalHeader />
+                {children}
+                <Toaster />
+            </UserProvider>
+        </SettingsProvider>
       </body>
     </html>
   );
