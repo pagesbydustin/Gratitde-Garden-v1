@@ -2,7 +2,6 @@
 'use client';
 
 import { useContext, useEffect, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getUsers } from '@/lib/actions';
+import { AdminAuth } from '@/components/admin/AdminAuth';
 
 const settingsFormSchema = z.object({
     gratitudePrompt: z.string().min(5, 'Prompt must be at least 5 characters.'),
@@ -29,12 +29,11 @@ const settingsFormSchema = z.object({
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com';
 
-export default function Dashboard() {
-    const { currentUser, loading: userLoading, deleteUser, updateUser, users } = useContext(UserContext);
+function DashboardPageContent() {
+    const { deleteUser, users } = useContext(UserContext);
     const { settings, updateSettings } = useContext(SettingsContext);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [usersLoading, setUsersLoading] = useState(true);
-    const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isSettingsPending, startSettingsTransition] = useTransition();
@@ -48,14 +47,6 @@ export default function Dashboard() {
         },
     });
 
-    const isAdminUser = currentUser?.email === ADMIN_EMAIL;
-    
-    useEffect(() => {
-        if (!userLoading && !isAdminUser) {
-            router.push('/');
-        }
-    }, [userLoading, isAdminUser, router]);
-        
     const fetchUsers = async () => {
         setUsersLoading(true);
         const users = await getUsers();
@@ -118,7 +109,7 @@ export default function Dashboard() {
         });
     }
 
-    if (userLoading || usersLoading || !isAdminUser) {
+    if (usersLoading) {
         return (
              <div className="flex justify-center min-h-screen">
                 <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -277,4 +268,13 @@ export default function Dashboard() {
             </main>
         </div>
     );
+}
+
+
+export default function Dashboard() {
+    return (
+        <AdminAuth>
+            <DashboardPageContent />
+        </AdminAuth>
+    )
 }

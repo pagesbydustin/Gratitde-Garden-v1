@@ -11,6 +11,7 @@ import { Menu, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserContext } from '@/context/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { AdminAuthContext } from '@/context/AdminAuthContext';
 import {
   Select,
   SelectContent,
@@ -26,18 +27,26 @@ export function GlobalHeader() {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { users, currentUser, setCurrentUser, loading: userLoading } = useContext(UserContext);
+  const { logout: adminLogout } = useContext(AdminAuthContext);
   const { toast } = useToast();
 
   const handleUserChange = (userId: string) => {
     const selectedUser = users.find(u => u.id === userId);
     if (selectedUser) {
+        // If switching away from admin, log out the admin
+        if (currentUser?.email === ADMIN_EMAIL && selectedUser.email !== ADMIN_EMAIL) {
+            adminLogout();
+        }
         setCurrentUser(selectedUser);
         toast({
             title: `Switched to ${selectedUser.name}`,
             description: `You are now viewing the journal as ${selectedUser.name}.`,
         });
-        // If the newly selected user is not an admin, redirect them to the homepage.
-        if (selectedUser.email !== ADMIN_EMAIL) {
+        
+        // If the newly selected user is not an admin but is on an admin page, redirect.
+        if (selectedUser.email !== ADMIN_EMAIL && pathname.startsWith('/admin')) {
+          router.push('/');
+        } else {
           router.push('/');
         }
     }
@@ -56,34 +65,35 @@ export function GlobalHeader() {
   
   const isAdminSelected = currentUser?.email === ADMIN_EMAIL;
   
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-      if (isAdminSelected && !href.startsWith('/admin')) {
-        // Prevent admin from navigating to non-admin pages, except for the root
-        if(href !== '/') {
-            e.preventDefault();
-            toast({
-                variant: 'destructive',
-                title: 'Navigation Restricted',
-                description: 'Admins can only access admin pages. Switch users to continue.',
-            });
-            return;
-        }
-      }
+  const handleNavClick = (href: string) => {
       setIsSheetOpen(false);
+      router.push(href);
   }
 
-  const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => (
-    <Button
-      asChild
-      variant={pathname === href ? 'secondary' : 'ghost'}
-      size={isMobile ? 'lg' : 'sm'}
-      className={cn(isMobile && 'w-full justify-start text-lg')}
-    >
-      <Link href={href} onClick={(e) => handleNavClick(e, href)}>{label}</Link>
-    </Button>
-  );
+  const NavLink = ({ href, label, isMobile }: { href: string; label: string; isMobile?: boolean }) => {
+    // For non-admin users, admin links should not even be rendered.
+    if (href.startsWith('/admin') && !isAdminSelected) {
+        return null;
+    }
+    
+    // For admin users, regular nav links should not be rendered.
+    if (!href.startsWith('/admin') && isAdminSelected) {
+        return null;
+    }
+      
+    return (
+        <Button
+            asChild
+            variant={pathname === href ? 'secondary' : 'ghost'}
+            size={isMobile ? 'lg' : 'sm'}
+            className={cn(isMobile && 'w-full justify-start text-lg')}
+        >
+            <Link href={href} onClick={() => handleNavClick(href)}>{label}</Link>
+        </Button>
+    );
+  }
   
-  const linksToShow = isAdminSelected ? adminLinks : navLinks.filter(link => link.href !== '/');
+  const linksToShow = isAdminSelected ? adminLinks : navLinks;
   
   useEffect(() => {
       // If a non-admin user tries to access an admin page, redirect them.
@@ -108,7 +118,6 @@ export function GlobalHeader() {
         <div className="flex items-center gap-4">
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
-                <NavLink href="/" label="Home" />
                 {linksToShow.map((link) => (
                     <NavLink key={link.href} href={link.href} label={link.label} />
                 ))}
@@ -155,7 +164,6 @@ export function GlobalHeader() {
                                 </Select>
                             </div>
 
-                            <NavLink href="/" label="Home" isMobile />
                             {linksToShow.map((link) => (
                                 <NavLink key={`mobile-${link.href}`} href={link.href} label={link.label} isMobile />
                             ))}

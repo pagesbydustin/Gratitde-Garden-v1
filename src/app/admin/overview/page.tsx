@@ -8,7 +8,7 @@ import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getAllEntries } from '@/lib/actions';
-import { useRouter } from 'next/navigation';
+import { AdminAuth } from '@/components/admin/AdminAuth';
 
 
 const moodMap: Record<number, { label: string }> = {
@@ -45,20 +45,12 @@ function processMoodData(entries: JournalEntry[]) {
   return chartData;
 }
 
-export default function AdminOverviewPage() {
-  const { currentUser, users, loading: userLoading } = useContext(UserContext);
+function AdminOverviewPageContent() {
+  const { users } = useContext(UserContext);
   const [allEntries, setAllEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   
   const adminUser = users.find(u => u.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com'));
-  const isAdminUser = currentUser?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com');
-    
-  useEffect(() => {
-    if (!userLoading && !isAdminUser) {
-        router.push('/');
-    }
-  }, [userLoading, isAdminUser, router]);
 
   useEffect(() => {
     getAllEntries().then((entries) => {
@@ -72,7 +64,7 @@ export default function AdminOverviewPage() {
   const chartData = processMoodData(allEntries);
   const hasEntries = allEntries.length > 0;
 
-  if (loading || userLoading || !isAdminUser) {
+  if (loading) {
     return (
         <div className="flex justify-center min-h-screen">
           <main className="w-full max-w-4xl px-4 py-8 md:py-12 space-y-12">
@@ -127,4 +119,12 @@ export default function AdminOverviewPage() {
       </main>
     </div>
   );
+}
+
+export default function AdminOverviewPage() {
+    return (
+        <AdminAuth>
+            <AdminOverviewPageContent />
+        </AdminAuth>
+    )
 }
