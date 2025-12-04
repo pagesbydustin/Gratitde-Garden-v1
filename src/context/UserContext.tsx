@@ -5,22 +5,6 @@ import { createContext, useState, useEffect, ReactNode, useCallback } from 'reac
 import { type User, type JournalEntry } from '@/lib/types';
 import { getEntries as apiGetEntries, addEntry as apiAddEntry, updateEntry as apiUpdateEntry, deleteUser as apiDeleteUser, updateUser as apiUpdateUser, getUsers as apiGetUsers } from '@/lib/actions';
 
-// A default user for the single-user experience
-const defaultUser: User = {
-    id: 'default-user',
-    name: 'Grateful User',
-    email: 'user@example.com',
-    'can-edit': true,
-};
-
-const adminUser: User = {
-    id: 'admin-user',
-    name: 'Admin',
-    email: process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com',
-    'can-edit': true,
-};
-
-
 /**
  * The shape of the UserContext.
  */
@@ -71,19 +55,23 @@ export const UserContext = createContext<UserContextType>({
  * @param {ReactNode} props.children - The child components to be wrapped by the provider.
  */
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [users, setUsers] = useState<User[]>([defaultUser, adminUser]);
-  const [currentUser, setCurrentUser] = useState<User | null>(defaultUser);
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refreshUsers = useCallback(async () => {
+      setLoading(true);
       const fetchedUsers = await apiGetUsers();
       setUsers(fetchedUsers);
-  }, []);
+      if (!currentUser && fetchedUsers.length > 0) {
+        setCurrentUser(fetchedUsers[0]);
+      }
+      setLoading(false);
+  }, [currentUser]);
 
   useEffect(() => {
-    // On initial load, you might want to get users from the backend
-    // For now, we use a hardcoded list.
+    refreshUsers();
   }, []);
 
   // Fetch entries when the current user changes
