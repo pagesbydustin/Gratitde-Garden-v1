@@ -52,6 +52,13 @@
       "moodScore": 3,
       "text": "Feeling okay today. Work was a bit stressful, but I'm glad it's over and I can relax now.",
       "userId": "user-lr"
+    },
+    {
+      "id": "7044dcde-f949-46dd-abfb-35466231cb0a",
+      "date": "2025-12-13T09:54:16.154Z",
+      "text": "Friday, Jim stood for about 8 minutes\n",
+      "moodScore": 4,
+      "userId": "user-dp"
     }
   ],
   "settings": {
