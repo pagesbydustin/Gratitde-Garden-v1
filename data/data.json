@@ -1,0 +1,27 @@
+{
+  "users": [
+    {
+      "id": "admin-user",
+      "name": "Admin",
+      "email": "admin@example.com",
+      "can-edit": true
+    },
+    {
+      "id": "002",
+      "name": "DP",
+      "email": "dp@example.com",
+      "can-edit": true
+    },
+    {
+      "id": "003",
+      "name": "LR",
+      "email": "LR@example.com",
+      "can-edit": true
+    }
+  ],
+  "entries": [],
+  "settings": {
+    "gratitudePrompt": "What are you grateful for today?",
+    "showExplanation": true
+  }
+}
