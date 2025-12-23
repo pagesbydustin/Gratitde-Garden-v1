@@ -7,7 +7,9 @@ import type { JournalEntry, User } from '@/lib/types';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const dataFilePath = path.join(process.cwd(), 'src', 'lib', 'data.json');
+// Change the data file path to be outside of the `src` directory
+const dataFilePath = path.join(process.cwd(), 'data', 'data.json');
+const dataDir = path.dirname(dataFilePath);
 
 type Data = {
   users: User[];
@@ -39,7 +41,12 @@ async function readData(): Promise<Data> {
 }
 
 async function writeData(data: Data): Promise<void> {
-  await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
+  try {
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Failed to write data file:', error);
+  }
 }
 
 
