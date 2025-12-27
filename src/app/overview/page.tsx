@@ -1,9 +1,6 @@
 
 'use client';
 
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type JournalEntry } from '@/lib/types';
 import { MoodsChart } from '@/components/overview/MoodsChart';
